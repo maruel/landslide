@@ -38,7 +38,8 @@ class Macro(object):
 
     def process(self, content, source=None):
         """Generic processor (does actually nothing)"""
-        return content, []
+        raise NotImplementedError(
+            'Return the content and a list of classes to add to the slide')
 
 
 class CodeHighlightingMacro(Macro):
@@ -58,11 +59,11 @@ class CodeHighlightingMacro(Macro):
         return self.html_entity_re.sub(f, string)
 
     def process(self, content, source=None):
+        classes = []
         code_blocks = self.code_blocks_re.findall(content)
         if not code_blocks:
-            return content, []
+            return content, classes
 
-        classes = []
         for block, void1, lang, code, void2 in code_blocks:
             try:
                 lexer = get_lexer_by_name(lang)
@@ -83,16 +84,15 @@ class EmbedImagesMacro(Macro):
     algorithm.
     """
     def process(self, content, source=None):
+        # TODO: Do the same with css?
         classes = []
-
         if not self.embed:
             return content, classes
 
         images = re.findall(r'<img\s.*?src="(.+?)"\s?.*?/?>', content,
                             re.DOTALL | re.UNICODE)
-
         if not images:
-            return content, []
+            return content, classes
 
         for image_url in images:
             if not image_url or image_url.startswith('data:'):
@@ -186,8 +186,15 @@ class NotesMacro(Macro):
     def process(self, content, source=None):
         classes = []
 
-        new_content = re.sub(r'<p>\.notes:\s?(.*?)</p>',
-                             r'<p class="notes">\1</p>', content)
+        # A re.sub() call would require re.DOTALL but it's only been added in
+        # python 2.7, implement it "at hand" to support python 2.6.
+        new_content = ''
+        last_index = 0
+        for m in re.finditer(r'<p>\.notes:\s?(.*?)</p>', content, re.DOTALL):
+          new_content += content[last_index:m.start()]
+          new_content += '<p class="notes">%s</p>' % m.group(1)
+          last_index = m.end()
+        new_content += content[last_index:]
 
         if content != new_content:
             classes.append(u'has_notes')

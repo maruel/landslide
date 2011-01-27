@@ -24,7 +24,7 @@ import sys
 import utils
 import ConfigParser
 
-from macro import *
+import macro
 from parser import Parser
 from subprocess import *
 
@@ -48,15 +48,12 @@ class Generator(object):
 
         # macros registering
         self.macros = []
-        default_macros = [
-            CodeHighlightingMacro,
-            EmbedImagesMacro,
-            FixImagePathsMacro,
-            FxMacro,
-            NotesMacro,
-        ]
-        for macro in default_macros:
-            self.register_macro(macro)
+        default_macros = (
+            getattr(macro, item) for item in dir(macro)
+            if re.match(r'.+Macro$', item)
+        )
+        for macro_cls in default_macros:
+            self.register_macro(macro_cls)
 
         if logger:
             if callable(logger):
@@ -78,7 +75,7 @@ class Generator(object):
                                      .replace('\r', '').split('\n'))
                 if config.has_option('landslide', 'theme'):
                     theme = config.get('landslide', 'theme')
-                    self.log(u"Using    configured theme %s" % theme)
+                    self.log(u"Using configured theme %s" % theme)
                 if config.has_option('landslide', 'destination'):
                     destination_file = config.get('landslide', 'destination')
             else:
@@ -103,9 +100,9 @@ class Generator(object):
                            "Please use one of these file extensions in the "
                            "destination")
 
-        self.embed = True if self.file_type == 'pdf' else embed
+        self.embed = self.file_type == 'pdf' or embed
 
-        self.theme = theme if theme else 'default'
+        self.theme = theme or 'default'
 
         if os.path.exists(theme):
             self.theme_dir = theme
@@ -261,7 +258,11 @@ class Generator(object):
 
         if content:
             content, slide_classes = self.process_macros(content, source)
-
+        if not 'main_slide' in slide_classes:
+          if header and not content:
+            slide_classes.append('main_slide')
+          else:
+            slide_classes.append('normal_slide')
         source_dict = {}
 
         if source:
@@ -303,20 +304,20 @@ class Generator(object):
         classes = []
         for macro_class in self.macros:
             try:
-                macro = macro_class(logger=self.logger, embed=self.embed)
-                content, add_classes = macro.process(content, source)
+                macro_obj = macro_class(logger=self.logger, embed=self.embed)
+                content, add_classes = macro_obj.process(content, source)
                 if add_classes:
                     classes += add_classes
             except Exception, e:
                 self.log(u"%s processing failed in %s: %s"
-                         % (macro, source, e))
+                         % (macro_obj, source, e))
         return content, classes
 
     def register_macro(self, macro_class):
         """Registers a new macro"""
         import inspect
         if (not inspect.isclass(macro_class)
-            or not Macro in macro_class.__bases__):
+            or not macro.Macro in macro_class.__bases__):
             raise TypeError("A macro must inherit from landslide.macro.Macro")
         else:
             self.macros.append(macro_class)
