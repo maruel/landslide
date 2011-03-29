@@ -20,8 +20,6 @@ même pour le même processus et les mêmes entrées.
 comment les détecter. Au fait, je vais parler d'un crash ou deux dans certains
 cas intéressants.
 
-.fx: main_slide
-
 ---
 
 Problèmes matériels
