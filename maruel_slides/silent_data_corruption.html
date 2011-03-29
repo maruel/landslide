@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2010 Google Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Original slides: Marcin Wichary (mwichary@google.com)
+  Modifications: Ernest Delgado (ernestd@google.com)
+                 Alex Russell (slightlyoff@chromium.org)
+
+  landslide modifications: Adam Zapletal (adamzap@gmail.com)
+                           Nicolas Perriault (nperriault@gmail.com)
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Corruption silencieuse de données</title>
+    <!-- Styles -->
+    
+    <link rel="stylesheet" media="print" href="file:///mnt/seagate1.5tb/maruel/src/landslide/src/landslide/themes/mine/css/print.css">
+    <link rel="stylesheet" media="screen, projection" href="file:///mnt/seagate1.5tb/maruel/src/landslide/src/landslide/themes/mine/css/screen.css">
+    
+    <!-- /Styles -->
+    <!-- Javascripts -->
+    
+    <script type="text/javascript" src="file:///mnt/seagate1.5tb/maruel/src/landslide/src/landslide/themes/mine/js/slides.js"></script>
+    
+    <!-- /Javascripts -->
+</head>
+<body>
+  <div class="presentation">
+    <div class="slides">
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide has_notes">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>Corruption silencieuse de données</h1></div>
+            
+            
+            <div class="subtitle"><h2>exemples, détection et correction</h2>
+<h3>(si vous êtes chanceux)</h3>
+<p class="notes">Qu'est-ce qui est pire qu'un crash? Bien sûr, une corruption de données
+silencieuse.</p>
+<p class="notes">Alors, qui peut expliquer clairement ce qu'est une corruption de données
+silencieuse?</p>
+<p class="notes">La prémise de base est simple. Vous avez des entrées, un processus et
+des sorties. Dans un processus déterministe, les sorties seront toujours les
+même pour le même processus et les mêmes entrées.</p>
+<p class="notes">Cette présentation est à propos des comportements probabilistes et
+comment les détecter. Au fait, je vais parler d'un crash ou deux dans certains
+cas intéressants.</p></div>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            1/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide has_notes">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>Problèmes matériels</h1></div>
+            
+            
+            <div class="subtitle"><h2>PPC: Personal Probabilistic Computer</h2>
+<p class="notes">En informatique, on aime bien le déterminisme. Malheureusement le
+matériel ne remplit pas toujours la partie de son contrat.</p></div>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            2/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>CPU</h2></header>
+            
+            
+            <section><h1>AMD Errata</h1>
+<h2>96 depuis les Athlons</h2>
+<p><a href="http://support.amd.com/us/processor_techdocs/41322.pdf">http://support.amd.com/us/processor_techdocs/41322.pdf</a></p>
+<h1>Intel CPU Errata</h1>
+<h2>142 juste pour le Core i7-9xx</h2>
+<p><a href="ftp://download.intel.com/design/processor/specupdt/320836.pdf">ftp://download.intel.com/design/processor/specupdt/320836.pdf</a></p>
+<p>Un processeur moderne ou un GPU a ~1 milliard de transistors, un seul a besoin
+de mal fonctionner, occasionellement.</p>
+<p class="notes">Premièrement, les processeurs sont vraiment pleins de bugs, de fonctions
+cachées et évidement de microcode mutable.</p>
+<p class="notes">Si vous voulez avoir mal au coeur, regardez les erratas de votre
+processeur.</p>
+<p class="notes">C'est donc parfois une bonne idée de ne pas être un des premiers à
+acheter un nouveau produit. C'est en général la job du système d'exploitation de
+régler les problèmes mais parfois ces problèmes sont des trous de sécurités,
+particulièrement face aux machines virtuelles.</p>
+<p class="notes">Une fois on a eu un problème occasionnel sur un serveur qui était
+difficile à diagnostiquer, jusqu'à temps qu'on regarde de plus près et de voir
+que le problème se manifestait seulement que lorsque l'opération était
+"scheduled" sur le core #3.</p>
+<p class="notes">La solution fût simple, désactiver le core #3.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            3/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Autres matériels</h2></header>
+            
+            
+            <section><ul>
+<li>La RAM (un classique)</li>
+<li>Contrôlleur PCI ou RAID</li>
+</ul>
+<p class="notes">Je ne m'éterniserai pas là dessus mais évidement n'importe quelle partie
+d'un ordinateur peut causer des problèmes occasionnels et non déterministes. Je
+vais parler du pire.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            4/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Le pire: votre disque dur</h2></header>
+            
+            
+            <section><p>Ratio d'erreur de lecture non récupérable par bits lu</p>
+<ul>
+<li><a href="http://www.seagate.com/docs/pdf/datasheet/disc/ds_barracuda_xt.pdf">Seagate: &lt; 10^14</a></li>
+<li><a href="http://www.wdc.com/wdproducts/library/SpecSheet/ENG/2879-701276.pdf">Western digital: &lt; 10^14</a></li>
+<li><a href="http://www.samsung.com/global/business/hdd/pr/brochures/downloads/2010_Internal%20HDD%20Product%20Guide%20Book_Rev.01.pdf">Samsung: 1 secteur par 10^15 bits</a></li>
+<li><a href="http://www.hitachigst.com/tech/techlib.nsf/techdocs/155901D3B251D9A9862577D50023A20A/$file/DS7K3000_ds.pdf">Hitachi: &lt; 10^14</a></li>
+</ul>
+<p class="notes">Regardez la diapositive. Qu'est-ce qu'elle montre? Si vous avez suivit
+l'évolution des disques durs dans les dernières décénies, vous avez réalisé que
+le taux d'erreur par lecteur est resté sensiblement le même alors que la
+capacité a été multiplié par un facteur d'au dessus de mille. Donc maintenant ça
+commence à être risqué d'essayer de lire un disque dur au complet une fois.
+C'est pas aussi pire que le tableau peut sembler montrer car c'est les seuils de
+tolérance mais j'espère que ça peut vous convaincre qu'un setup RAID n'est plus
+très utile en 2011.</p>
+<p class="notes">J'en avais parlé dans ma dernière présentation, le Terabyte benchmark,
+nous classons 1Tb de chaines de 100 octets, donc 10,000,000,000 (dix milliards)
+de chaines.</p>
+<p class="notes">Quelqu'un se rappelle quel record Google a fait en 2008? Sur 1000
+ordinateurs. 68 secondes.</p>
+<p class="notes">Bon, un 1Tb, c'est bien mais c'est beaucoup trop rapide à classer alors
+des programmeurs ont décidés de classer 1Pb. Quelqu'un veut deviner? Sur 4000
+ordinateurs et 48000 disques durs. 6 heurs et 2 minutes.</p>
+<p class="notes">Mais ce qui est vraiment intéressant, c'est qu'à chaque essai, au moins
+un disque dur brisait. Donc, si vous utiliser un HD à 100% pendant 6h, vous avez
+probablement une chance sur 50 milles qu'il brise. C'est beaucoup. Mais c'est ok
+quand le disque dur plante, le système d'exploitation va avertir le processus,
+peut-être qu'il va crasher mais l'important est que l'erreur n'est pas
+silencieuse. Mais parfois le disque dur ne réussira pas à lire le secteur et va
+retourner du déchet à la place de retourner une erreur. Et c'est exactement le
+sujet de cette présentation.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            5/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>Problèmes Logiciels</h1></div>
+            
+            
+            <div class="subtitle"><h1>Ça ne s'améliore pas...</h1>
+</div>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            6/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Calcul à virgule flotante</h2></header>
+            
+            
+            <section><p><a href="http://en.wikipedia.org/wiki/Pentium_FDIV_bug">http://en.wikipedia.org/wiki/Pentium_FDIV_bug</a></p>
+<ul>
+<li>Les différences entre un calcul exécuté en SSE ou sur le FPU en 80 bits,
+  save/load en double sur la stack, etc.</li>
+<li>GPU</li>
+</ul>
+<p>32 bits</p>
+<ul>
+<li>(10.0000001-10) / (10.0000001-10)</li>
+</ul>
+<p>64 bits</p>
+<ul>
+<li>(10.0000000000000001-10) / (10.0000000000000001-10)</li>
+</ul>
+<p class="notes">Donc, pour ceux qui ont trouvé la réponse à l'énigme, bravo! Rammenez
+vous en 1994. Le meilleur processeur était un Pentium 1 à 60 ou 66 mhz. Et ce
+processeur ne pouvait diviser deux nombres correctement.</p>
+<p class="notes">Mais le problème avec les nombres à virgules est bien plus grand. Quand
+vous utilisez un processeur récent, le calcul est fait en 64 bits à la place de
+80 car le SSE est utilis donc l'arrondit est différent. Et c'est encore pire
+lorsque de l'accélération par GPU est utilisé.</p>
+<p class="notes">Et c'est entre autre à cause que les GPUs ont un "rounding" qui est
+"hard codé".</p>
+<p class="notes">Et vous vous demandez encore pourquoi c'est important?</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            7/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Attention au floats</h2></header>
+            
+            
+            <section><pre><code>&lt;?php $d = 2.2250738585072011e-308; ?&gt;
+</code></pre>
+<p>Et ces nombres?</p>
+<pre><code>2.2250738585072008e-308
+2.2250738585072009e-308
+2.2250738585072010e-308
+2.2250738585072012e-308
+</code></pre>
+<p>Solution: Utiliser gcc -ffloat-store; mais pourquoi?</p>
+<p><a href="http://bugs.php.net/bug.php?id=53632">Fixé dans SVN le 2011-01-06</a></p>
+<p class="notes">Bien, dans les versions vieilles de PHP, comme plus d'un mois, un
+utilisateur peut faire geler le serveur au complet s'il peut mettre ce nombre
+dans une variable.</p>
+<p class="notes">Ce nombre representé le plus petit nombre en 64 bits qui est
+sous-normal, 0.1111111111111111111111111111111111111111111111111111 x 2^-1022.</p>
+<p class="notes">Currieusement, les nombres litéraux proches, qui retournent tous le même
+nombre en double, ne cause pas ce problème. Est-ce que quelqu'un peut me dire
+pourquoi? Il y a déjà un indice dans la diapo.</p>
+<p class="notes">Alors qu'est-ce que --ffloat-store fait?</p>
+<p class="notes">C'est une façon détournée de forcer toute les calculations à être
+exécutés en 64 bits à la place du 80 bits qui est par défaut en plaçant de façon
+systématique les doubles sur la stack. C'est évidemment pas très performant.</p>
+<p class="notes">Aussi, ça ne se produit seulement parce que le SSE n'est pas utilisé.</p>
+<p class="notes">Et le plus drôle est que le fichier source où il y avait le bogue venait
+d'une vieille version de libc, mais php n'avait pas mis à jour leur copie quand
+libc avait réglé le bogue il y a plusieurs années.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            8/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Compilateur</h2></header>
+            
+            
+            <section><p><a href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=39118">gcc 4.3 red-zone overflow on x64</a></p>
+<ul>
+<li>Leaf function</li>
+<li>Compilé avec "Frame Pointer Optimization" désactivé</li>
+<li>128 octets de stack peut être utilisé sans déplacer le pointeur de stack</li>
+<li>Interruption au moment précis entre undata store et a data loads se produit
+  dans la "red zone overflow" sur la stack</li>
+<li>Crash ou valeurs totalement invalides, dépendant du type de variable corrompu</li>
+<li>Totalement non-reproductible!</li>
+</ul>
+<p class="notes">La zone rouge, c'est 128 octets que la fonction peut utiliser et qui ne
+sera pas écrasée par un "signal handler" ou d'interruption.</p>
+<p class="notes">Ça se produit lorsque le FPO a été désactivé pour aider au déverminage.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            9/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Librarie C standard</h2></header>
+            
+            
+            <section><p><code>strstr()</code></p>
+<ul>
+<li><a href="http://sourceware.org/bugzilla/show_bug.cgi?id=12092">Valeur de retour invalide sur SSE2-SSE3</a></li>
+<li>Régression de la performance de la version SSE4 par rapport aux versions
+  non-SSE4</li>
+<li>Octobre 2010</li>
+</ul>
+<p><a href="http://sourceware.org/bugzilla/attachment.cgi?id=5037">http://sourceware.org/bugzilla/attachment.cgi?id=5037</a></p>
+<pre><code>strstr(
+  "F_BD_CE_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_"
+    "BF_BD_C3_88_20_EF_BF_BD_EF_BF_BD_EF_BF_"
+    "BD_C3_A7_20_EF_BF_BD",
+  "_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_"
+    "BF_BD") != NULL
+</code></pre>
+<p class="notes">La version SSE4 était plus lente que les autre versions! Elle était
+quadratique.</p>
+<p class="notes">Les versions optimisés utilisent l'algorithme de Boyer-Moore.</p>
+<p class="notes">C'est le genre de chaînes qu'on ne voit pas souvent, mais quand votre
+mission est d'organiser l'information mondiale, ça arrive que des chaînes
+étranges soient trouvées.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            10/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Librarie C standard (cont.)</h2></header>
+            
+            
+            <section><p><code>strncmp/strncase</code></p>
+<ul>
+<li>Crash sur des longues chaînes qui se terminent à la fin d'une page de mémoire
+  sur les version SSE2-SS3 x64</li>
+<li><a href="http://sourceware.org/bugzilla/show_bug.cgi?id=12077">http://sourceware.org/bugzilla/show_bug.cgi?id=12077</a></li>
+<li>Octobre 2010</li>
+</ul>
+<p class="notes">Ce n'est pas une corruption silencieuse mais c'est quand même drôle, et
+ça nous ai arrivé.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            11/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Votre programme multi-thread sans lock</h2></header>
+            
+            
+            <section><pre><code>int sum = 0;
+
+void f() {
+  for (int i = 0; i &lt; 1000000; ++i)
+    sum++;
+}
+
+void main() {
+  t1 = start_thread(&amp;f);
+  t2 = start_thread(&amp;f);
+  join_thread(t1);
+  join_thread(t2);
+}
+</code></pre>
+<p class="notes">Qui a déjà écrit une application avec plusieurs threads?</p>
+<p class="notes">Qui comprend comment utiliser des locks?</p>
+<p class="notes">Pour le monde qui reste, je crois que ce pseudo-code parle par lui-même.</p>
+<p class="notes">Donc, qui peut me dire qu'est-ce qu'un lock
+single-writer-multiple-reader est? Parfois un nom différent est utilisé.</p>
+<p class="notes">Envoie moi ton CV.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            12/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Fiasco des clés ssh sur Debian</h2></header>
+            
+            
+            <section><p>Réduction de l'entropie sur les clés ssh générées entre 2006-2008</p>
+<p>Seulement 32767 clés ssh différentes (!) peuvent être générés sur les versions
+défectueuses</p>
+<p><a href="http://debian.org/security/key-rollover/">http://debian.org/security/key-rollover/</a></p>
+<p>openssl.org n'était pas vulnérable, seulement les descendants de debian</p>
+<p>Comment détecter une réduction d'entropie?</p>
+<p class="notes">Un manque d'entropie est aussi une sorte de corruption silencieuse de
+données. On s'attend à ce que le processus soit probabiliste alors qu'il est
+déterministe!</p>
+<p class="notes">Qui a une clé ssh?</p>
+<p class="notes">Qui l'a créé en 2008 ou avant?</p>
+<p class="notes">Qui a utilisé un système debian ou ubuntu pour la créer?</p>
+<p class="notes">De ceux qui reste, qui pense que leur clé ssh est sécuritaire?</p>
+<p class="notes">En passant, le manque d'entropie est une des nombreuses erreurs qui a
+permit de cracker la PlayStation 3 il y a quelques semaines.</p>
+<p class="notes">La chose à retenir est que l'entropie d'une source "random" est
+extrêmement importante et qu'une réduction de son entropie ne sera pas visible.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            13/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>Convaincu?</h1></div>
+            
+            
+            <div class="subtitle"><h2>Comment détecter</h2>
+</div>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            14/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Quoi faire?</h2></header>
+            
+            
+            <section><p>N'essayez pas</p>
+<ul>
+<li>Tests unitaires systématiques</li>
+<li>Retirer toute votre argent de la banque</li>
+</ul>
+<p>À la place,</p>
+<ul>
+<li>Ne pas faire confiance aux logiciels</li>
+<li>Ne pas faire confiance au matériel</li>
+<li>Utiliser le plus de logiciels "open source"</li>
+<li>Faire confiance mais vérifier</li>
+</ul>
+<p class="notes">Pourquoi je dis de favoriser les logiciels avec le code source
+disponible? Ce n'est pas par évangélisme, c'est simplement que chaque boîte
+noire augmente considérablement la difficulté de comprendre et d'identifier le
+problème.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            15/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Détection</h2></header>
+            
+            
+            <section><p>La seule vraie façon de détection une corruption silencieuse de données est
+d'être capable de rouler votre processus plusieurs fois avec les mêmes données
+d'entrées pour comparer les sorties; sans effect secondaire et indépendemment de
+l'ordinateur qui est utilisé.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            16/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Quand bâdrer</h2></header>
+            
+            
+            <section><p>Vous ne devriez pas faire attention pour:</p>
+<ul>
+<li>Données éphémères</li>
+<li>Données à être effacées</li>
+<li>Données non utilisées</li>
+</ul>
+<p>Ce que vous devriez porter attention:</p>
+<ul>
+<li>La plupart des données utilisateurs</li>
+<li>N'importe quoi qui touche l'argent ou des propriétés de valeur</li>
+</ul>
+<p class="notes">Premièrement, laissez-moi définir les données éphémère. C'est tout ce
+qui est a une valeur qui est limité dans le temps et qui sera remplacé dans un
+avenir connu d'avance.</p>
+<p class="notes">Par exemple, si vous regardez une page web, ce n'est pas trop grave si
+il y a un "glitch" car les données peuvent être regénérées facilement.</p>
+<p class="notes">En particulier, ce sont les données en transit qui peuvent être
+réenvoyés sans problème, comme des pages webs ou le traffic d'un jeu vidéo. Les
+scores, par contre, sont importants à protéger.</p>
+<p class="notes">En général, si vous offrez un service où les usagers peuvent mettre des
+données dessus, les usagers vous font confiance.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            17/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Détection</h2></header>
+            
+            
+            <section><ul>
+<li>Utiliser une signature cryptographique sur toutes les entrées<ul>
+<li>Vérifier la signature à la lecture</li>
+</ul>
+</li>
+<li>Réduire les mutations de données<ul>
+<li>Utiliser une approche de programmation fonctionnelle</li>
+</ul>
+</li>
+<li>Utiliser des processus isolés</li>
+</ul>
+<p class="notes">Je fais référence aux données importantes seulement. Vous pouvez
+toujours regénérer des nouvelles copies et faire du "garbage collection" avec
+les tables précédentes. Je discuterai de cela plus tard.</p>
+<p class="notes">Essayez de ne pas avoir des processus massivement "multithreadé" où tout
+roule dans un seul processus. En faisant cela, vous augmentez massivement la
+probabilité d'effets secondaires, causé par une utilisation inappropriée ou
+l'absense de "locks" par exemple.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            18/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Système de fichiers</h2></header>
+            
+            
+            <section><ul>
+<li>Système de fichiers avec "snapshots" implicites</li>
+<li>Avantages<ul>
+<li>Hash des métadonnées</li>
+<li>"Copy on write"</li>
+</ul>
+</li>
+<li>Moins de mutation de secteurs sur le disque</li>
+<li>Désavantages<ul>
+<li>Plus d'accès aléatoires</li>
+<li>Plus de fragmentation</li>
+<li>Ces 2 problèmes sont moins criants sur de la mémoire flash</li>
+</ul>
+</li>
+</ul>
+<p class="notes">Les systèmes de fichiers meurent aussi. Qui a déjà eu des erreurs sur le
+système de fichiers sur son ordinateur?</p>
+<p class="notes">Si vous regardez les avantages, c'est essentiellement ce que j'ai dis
+auparavant.</p>
+<p class="notes">Qui peut m'en nommer un? BTRFS? ZFS?</p>
+<p class="notes">BTRFS n'est pas recommandé encore mais vous devriez changer aussitôt que
+c'est viable.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            19/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Base de données</h2></header>
+            
+            
+            <section><ul>
+<li>Ne <em>jamais</em> effacer les “évidences”</li>
+<li>L'espace disque coûte toujours moins cher</li>
+<li>Les bases de données se compressent facilement</li>
+<li>Un index peut facilement être recréé</li>
+<li>Déterminer ce qui est important, ce qui ne l'est pas<ul>
+<li>Est-ce possible de recréer une table à partir d'autres? Est-ce que ça peut
+  être bidirectionel?</li>
+<li>Inutile s'il n'y a pas de signature sur chaque entrée</li>
+</ul>
+</li>
+<li>Hash des entrées individuelles et non du fichier au complet</li>
+<li>Visez la replication à la place d'archivage (backup)<ul>
+<li>Fonctionnement seulement bien avec des bases de données "Append-Only"</li>
+</ul>
+</li>
+</ul>
+<p class="notes">L'idée est d'utiliser une approche de programmation fonctionnelle, où
+aucune donnée n'est jamais modifiée mais seulement des nouvelles données sont
+créées. BigTable est construit sur ce principle en utilisant des SSTables.</p>
+<p class="notes">Qui peut me dire ce qu'est une SSTable? CV?</p>
+<p class="notes">SSTable est l'accronyme de Sorted Strings table. Cherchez sur le net
+pour plus de détails. Donc BigTable, pour émuler des entrées modifiables, ajoute
+simplement des nouvelles entrées à la fin de la table et met à jour l'indexe.</p>
+<p class="notes">Mais l'index est mutable? On s'en fout car il peut être recréé.</p>
+<p class="notes">Et une fois qu'une SSTable a trop de junk dedans, on en regénère
+d'autres et on échange les tables actives. Les anciennes tables sont mangées par
+le garbage collector. Et si ça sonne comme l'implémentation de String dans tous
+les languages avec une gestion de mémoire par GC, c'est normal car des données
+en lecture seule sont plus sécuritaire et les GC fonctionnent.</p>
+<p class="notes">Et c'est encore plus simple lorsque vous savez qu'un disque dur, c'est
+pas cher. Et vous pouvez répliquer les tables en temps réel car la table est
+"Append-Only", son contenu n'est jamais modifié.</p>
+<p class="notes">Mais garder les entrées individueles d'une table est important. Le
+fichier n'est qu'un contenant. Peut-être qu'une seule entrée fut corrompue,
+c'est donc d'important de pouvoir sauvegarder le maximum de données.</p>
+<p class="notes">N'oubliez pas, effacer un fichier c'est rapide. La réplication est
+simple lorsqu'il n'y a pas de mutation.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            20/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Distributed parallel fault-tolerant file system</h2></header>
+            
+            
+            <section><ul>
+<li>Plusieurs copies<ul>
+<li>Redondance intégrée</li>
+</ul>
+</li>
+<li>Plusieurs ordinateurs dans un "cluster"<ul>
+<li>Vérifie automatiquement si un ordinateur est mort ou une copie est
+  corrompue</li>
+</ul>
+</li>
+<li>C'est surtout<ul>
+<li>Redondance</li>
+<li>Absense de localité d'ordinateur, "computer-locality"</li>
+<li>Utilisation de "rack locality" à la place</li>
+<li>C'est ce que la plupart des architectes de base de données font!</li>
+</ul>
+</li>
+</ul>
+<p class="notes">Qui peut me nommer un système de fichier distribué qui est tolérant aux
+erreurs</p>
+<p class="notes">GFS, hadoop distributed file system, HDFS, AFS</p>
+<p class="notes">Facebook, IBM, Linkedin, Twitter, Rackspace.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            21/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>En conclusion</h1></div>
+            
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            22/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Approche programmation fonctionnelle</h2></header>
+            
+            
+            <section><p>Données en lecture seule le plus possible</p>
+<p>Un algorithme à utiliser potentiellement est MapReduce</p>
+<p class="notes">Pour les données importantes seulement</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            23/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Utiliser des processus déterministes</h2></header>
+            
+            
+            <section><ul>
+<li>Données d'entrées immuables</li>
+<li>Les données de sorties sont toujours les même pour un même processus</li>
+<li>Indépendant de l'ordinateur sur lequel le processus roule</li>
+</ul>
+<p>C'est la seule façon de vérifier votre algorithme d'une façon automatisée</p>
+<p class="notes">Ou de même essayer de déverminer une erreur transiente. Les "memory
+dumps" sont moins utiles car en général, on n'a pas accès aux données d'entrées.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            24/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Redondance d'exécution</h2></header>
+            
+            
+            <section><p>Rouler de façon préemptive quelques "jobs" plusieurs fois pour détecter une
+corruption silencieuse de données en comparant des résultats de façon proactive
+et de facon automatisée</p>
+<h2>Un logiciel redondant est beaucoup plus solide que du matériel redondant</h2></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            25/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide has_notes normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Regardez vos flux de données</h2></header>
+            
+            
+            <section><p>Signifie fréquemment réécrire une bonne partie des flux de données dans votre
+logiciel.</p>
+<p>Mais quel est le coût d'une corruption silencieuse (ou visible) dans votre
+projet, versus la probabilité que ça se produise.</p>
+<p class="notes">C'est difficile, vraiment difficile. Vous ne pouvez facilement changer
+une logiciel sans changer ses fonctionalités de base. Mais si vous pensez à
+créer une start up qui va peut-être attendre des millions d'utilisateurs,
+pensez-y deux fois.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            26/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: maruel_slides/silent_data_corruption.md -->
+      <div class="slide main_slide">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>Merci!</h1></div>
+            
+            
+            <div class="subtitle"><h2>Les sources de cette présentation seront à</h2>
+<h2><a href="http://github.com/maruel/landslide">http://github.com/maruel/landslide</a></h2>
+</div>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/silent_data_corruption.md">maruel_slides/silent_data_corruption.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            27/27
+          </aside>
+        </footer>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div id="toc" class="sidebar hidden">
+    <h2>Table of Contents</h2>
+    <table>
+      <caption>Table of Contents</caption>
+            
+      <tr id="toc-row-1">
+        <th><a href="#slide1">Corruption silencieuse de données</a></th>
+        <td><a href="#slide1">1</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-2">
+        <th><a href="#slide2">Problèmes matériels</a></th>
+        <td><a href="#slide2">2</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-3" class="sub">
+          <th><a href="#slide3">CPU</a></th>
+          <td><a href="#slide3">3</a></td>
+        </tr>
+        
+        <tr id="toc-row-4" class="sub">
+          <th><a href="#slide4">Autres matériels</a></th>
+          <td><a href="#slide4">4</a></td>
+        </tr>
+        
+        <tr id="toc-row-5" class="sub">
+          <th><a href="#slide5">Le pire: votre disque dur</a></th>
+          <td><a href="#slide5">5</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-6">
+        <th><a href="#slide6">Problèmes Logiciels</a></th>
+        <td><a href="#slide6">6</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-7" class="sub">
+          <th><a href="#slide7">Calcul à virgule flotante</a></th>
+          <td><a href="#slide7">7</a></td>
+        </tr>
+        
+        <tr id="toc-row-8" class="sub">
+          <th><a href="#slide8">Attention au floats</a></th>
+          <td><a href="#slide8">8</a></td>
+        </tr>
+        
+        <tr id="toc-row-9" class="sub">
+          <th><a href="#slide9">Compilateur</a></th>
+          <td><a href="#slide9">9</a></td>
+        </tr>
+        
+        <tr id="toc-row-10" class="sub">
+          <th><a href="#slide10">Librarie C standard</a></th>
+          <td><a href="#slide10">10</a></td>
+        </tr>
+        
+        <tr id="toc-row-11" class="sub">
+          <th><a href="#slide11">Librarie C standard (cont.)</a></th>
+          <td><a href="#slide11">11</a></td>
+        </tr>
+        
+        <tr id="toc-row-12" class="sub">
+          <th><a href="#slide12">Votre programme multi-thread sans lock</a></th>
+          <td><a href="#slide12">12</a></td>
+        </tr>
+        
+        <tr id="toc-row-13" class="sub">
+          <th><a href="#slide13">Fiasco des clés ssh sur Debian</a></th>
+          <td><a href="#slide13">13</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-14">
+        <th><a href="#slide14">Convaincu?</a></th>
+        <td><a href="#slide14">14</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-15" class="sub">
+          <th><a href="#slide15">Quoi faire?</a></th>
+          <td><a href="#slide15">15</a></td>
+        </tr>
+        
+        <tr id="toc-row-16" class="sub">
+          <th><a href="#slide16">Détection</a></th>
+          <td><a href="#slide16">16</a></td>
+        </tr>
+        
+        <tr id="toc-row-17" class="sub">
+          <th><a href="#slide17">Quand bâdrer</a></th>
+          <td><a href="#slide17">17</a></td>
+        </tr>
+        
+        <tr id="toc-row-18" class="sub">
+          <th><a href="#slide18">Détection</a></th>
+          <td><a href="#slide18">18</a></td>
+        </tr>
+        
+        <tr id="toc-row-19" class="sub">
+          <th><a href="#slide19">Système de fichiers</a></th>
+          <td><a href="#slide19">19</a></td>
+        </tr>
+        
+        <tr id="toc-row-20" class="sub">
+          <th><a href="#slide20">Base de données</a></th>
+          <td><a href="#slide20">20</a></td>
+        </tr>
+        
+        <tr id="toc-row-21" class="sub">
+          <th><a href="#slide21">Distributed parallel fault-tolerant file system</a></th>
+          <td><a href="#slide21">21</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-22">
+        <th><a href="#slide22">En conclusion</a></th>
+        <td><a href="#slide22">22</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-23" class="sub">
+          <th><a href="#slide23">Approche programmation fonctionnelle</a></th>
+          <td><a href="#slide23">23</a></td>
+        </tr>
+        
+        <tr id="toc-row-24" class="sub">
+          <th><a href="#slide24">Utiliser des processus déterministes</a></th>
+          <td><a href="#slide24">24</a></td>
+        </tr>
+        
+        <tr id="toc-row-25" class="sub">
+          <th><a href="#slide25">Redondance d'exécution</a></th>
+          <td><a href="#slide25">25</a></td>
+        </tr>
+        
+        <tr id="toc-row-26" class="sub">
+          <th><a href="#slide26">Regardez vos flux de données</a></th>
+          <td><a href="#slide26">26</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-27">
+        <th><a href="#slide27">Merci!</a></th>
+        <td><a href="#slide27">27</a></td>
+      </tr>
+      
+      
+    </table>
+  </div>
+  
+  <div id="help" class="sidebar hidden">
+    <h2>Help</h2>
+    <table>
+      <caption>Help</caption>
+      <tr>
+        <th>Table of Contents</th>
+        <td>t</td>
+      </tr>
+      <tr>
+        <th>Source Files</th>
+        <td>s</td>
+      </tr>
+      <tr>
+        <th>Slide Numbers</th>
+        <td>n</td>
+      </tr>
+      <tr>
+        <th>Notes</th>
+        <td>2</td>
+      </tr>
+      <tr>
+        <th>Help</th>
+        <td>h</td>
+      </tr>
+    </table>
+  </div>
+  <script>main()</script>
+</body>
+</html>
