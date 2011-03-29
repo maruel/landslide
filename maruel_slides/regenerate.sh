@@ -5,3 +5,4 @@
 
 ROOT=$(dirname $0)
 $ROOT/../landslide $ROOT/silent_data_corruption.md --theme mine --embed -d $ROOT/silent_data_corruption.html
+$ROOT/../landslide $ROOT/maruel_git.md --theme mine --embed -d $ROOT/maruel_git.html

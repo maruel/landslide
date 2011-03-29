@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2010 Google Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Original slides: Marcin Wichary (mwichary@google.com)
+  Modifications: Ernest Delgado (ernestd@google.com)
+                 Alex Russell (slightlyoff@chromium.org)
+
+  landslide modifications: Adam Zapletal (adamzap@gmail.com)
+                           Nicolas Perriault (nperriault@gmail.com)
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>git</title>
+    <!-- Styles -->
+    
+    <style type="text/css" media="print">
+      * {
+    margin: 0;
+    padding: 0;
+}
+@page {
+    size: landscape;
+}
+body {
+    font: 100% "Lucida Grande", "Trebuchet MS", Verdana, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+div.slide {
+    min-width: 800px;
+    min-height: 600px;
+    padding: 1em;
+    overflow: hidden;
+    page-break-after: always;
+    border: 1px solid black;
+    border-radius: 20px;
+}
+div.slide div.inner {
+    width: 800px;
+    height: 600px;
+    margin: auto;
+    display: table-cell;
+}
+h1 {
+    font-size: 2.4em;
+}
+h2 {
+    font-size: 1.4em;
+}
+h3 {
+    margin: 1em 0;
+}
+ul {
+    margin: 0;
+    padding: 0;
+}
+p, li, pre {
+    margin: 1em 0;
+}
+li {
+    margin-left: 2em;
+}
+a {
+    color: #000000;
+}
+pre, code {
+    max-width: 800px;
+    background: #eee;
+    font-family: Monaco, monospace;
+    font-size: 90%;
+}
+pre {
+    padding: .2em .5em;
+    overflow: hidden;
+    border-radius: .8em;
+}
+code {
+    padding: 0 .2em;
+}
+.slide header:only-child h1 {
+  line-height: 180%;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+  height: 600px;
+  width: 800px;
+  font-size: 48px;
+  margin-top:100px;
+  margin-bottom:100px;
+}
+#toc, #help, .slide aside, .slide footer, .slide .notes {
+  display: none;
+}
+
+    </style>
+    <style type="text/css" media="screen, projection">
+      body {
+  font-family: "Lucida Grande", "Trebuchet MS", Verdana, sans-serif;
+  background: #778;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+div.presentation {
+  position: absolute;
+  width: 100%;
+  display: table-cell;
+  vertical-align: middle;
+  height: 100%;
+  background: inherit;
+}
+
+div.slides {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  position: absolute;
+  display: block;
+  -webkit-transition: -webkit-transform 1s ease-in-out;
+  -moz-transition: -moz-transform 1s ease-in-out;
+  -o-transition: -o-transform 1s ease-in-out;
+}
+
+div.slide {
+  /* slides aren't displayed by default, only .slide.current is visible. */
+  display: none;
+  position: absolute;
+  overflow: hidden;
+  /* Use % instead? */
+  width: 900px;
+  height: 700px;
+  left: 50%;
+  top: 50%;
+  margin-top: -350px;
+  -webkit-transition: margin 0.25s ease-in-out;
+  -moz-transition: margin 0.25s ease-in-out;
+  -o-transition: margin 0.25s ease-in-out;
+  border-radius: 20px;
+  box-shadow: 10px 10px 5px #555;
+}
+
+/* Slide with text in the middle */
+div.main_slide {
+  background: -webkit-gradient(linear, left bottom, right top, from(#ff6165), to(#eeddee));
+/*  background: -webkit-gradient(linear, left bottom, left top, from(#00abeb), to(#fff), color-stop(0.5, #fff), color-stop(0.5, #66cc00))*/
+
+  background-color: #eee;
+/*  background: -moz-linear-gradient(bottom, #bbd, #fff);*/
+  text-shadow: rgba(0, 0, 0, 0.3) 0 5px 5px;
+}
+
+/* Slide with a top header and content */
+div.normal_slide {
+ /* background: -webkit-gradient(radial, 145 130, 10, 150 120, 30, from(#A7D30C), to(rgba(1,159,98,0)), color-stop(40%, #019F62)), -webkit-gradient(linear, left bottom, left top, from(#bbd), to(#dde));*/
+  /*background: -webkit-gradient(linear, left bottom, left top, from(#aac), to(#dde));*/
+  background: -webkit-gradient(linear, left bottom, left top, from(#c6cbff), to(#66cc00), color-stop(0.86, #fff), color-stop(0.82, #a9b0f6));
+  /**/
+ /* background-color: #eee;
+  background: -moz-linear-gradient(bottom, #bbd, #fff);*/
+}
+
+/* This sucks, it should just be hidden */
+.slide.far-past {
+  display: block;
+  margin-left: -2400px;
+}
+
+.slide.past {
+  display: block;
+  margin-left: -1400px;
+}
+
+.slide.current {
+  display: block;
+  margin-left: -450px;
+}
+
+.slide.future {
+  display: block;
+  margin-left: 500px;
+}
+
+/* This sucks, it should just be hidden */
+.slide.far-future {
+  display: block;
+  margin-left: 1500px;
+}
+
+body.three-d div.slides {
+  -webkit-transform: translateX(50px) scale(0.8) rotateY(10deg);
+  -moz-transform: translateX(50px) scale(0.8) rotateY(10deg);
+  -o-transform: translateX(50px) scale(0.8) rotateY(10deg);
+}
+
+
+/* Content */
+
+.main_slide .title {
+  line-height: 180%;
+  text-align: center;
+  display: block;
+  vertical-align: middle;
+  height: 100px;
+  width: 900px;
+  font-size: 27px;
+  margin-top: 350px;
+  margin-bottom: 0px;
+}
+
+.main_slide .subtitle {
+  line-height: 100%;
+  text-align: center;
+  display: block;
+  vertical-align: middle;
+  height: 50px;
+  width: 900px;
+  font-size: 20px;
+  margin-top: 0px;
+  margin-bottom: 100px;
+}
+
+header {
+  font-weight: normal;
+  letter-spacing: -.05em;
+  color: black;
+  text-shadow: rgba(0, 0, 0, 0.2) 0 2px 5px;
+  position: absolute;
+  left: 30px;
+  top: 25px;
+  margin: 0;
+  padding: 0;
+
+  display: inline;
+}
+
+/* Hack out the <hN> tag */
+header h1, header h2, header h3, header h4, header h5, header h6 {
+  display: inline;
+  font-size: 50px;
+  font-weight: normal;
+  padding: 0;
+  margin: 0;
+ /* background: -webkit-gradient(linear, left top, left bottom, from(#00abeb), to(#fff), color-stop(0.5, #fff), color-stop(0.5, #66cc00));*/
+ /* background: -webkit-gradient(radial, 45 30, 10, 100 20, 30, from(#A7D30C), to(rgba(1,159,98,0)), color-stop(40%, #019F62));*/
+}
+
+div.slide {
+  font-size: 30px;
+}
+
+/* That's the content for a normal_slide. */
+section {
+  /*color: #3f3f3f;*/
+  color: black;
+  text-shadow: rgba(0, 0, 0, 0.2) 0 2px 5px;
+  /*font-size: 30px;*/
+  margin-left: 30px;
+  margin-right: 30px;
+  margin-top: 100px;
+  display: block;
+  overflow: hidden;
+}
+
+section h1, section h2, section h3, section h4 {
+  font-size: 100%;
+}
+
+/* General content */
+
+a {
+  color: inherit;
+  display: inline-block;
+  text-decoration: none;
+  line-height: 110%;
+  border-bottom: 2px solid #3f3f3f;
+}
+
+pre {
+  font-size: 30px;
+  font-style: italic;
+  font-family: Monaco, Courier, monospace;
+}
+
+li {
+  padding: 4px 0;
+}
+
+
+/* Side bar stuff. */
+
+.sidebar {
+  background: -webkit-gradient(linear, top right, bottom right, from(#dde), to(#fff));
+  -webkit-transition: margin 0.25s ease-in-out;
+  background-color: #eee;
+  background: -moz-linear-gradient(right, #dde, #fff);
+  border-right: 5px solid #ccd;
+  z-index: 9999999;
+  height: 100%;
+  top: 0;
+  position: absolute;
+  display: block;
+  margin: 0;
+  margin-left: -400px;
+  padding: 10px 16px;
+  overflow: auto;
+  -webkit-transition: margin 0.2s ease-in-out;
+  -moz-transition: margin 0.2s ease-in-out;
+  -o-transition: margin 0.2s ease-in-out;
+}
+
+.sidebar h2 {
+  text-shadow: rgba(0, 0, 0, 0.2) 0 2px 5px;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.sidebar table {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}
+
+.sidebar table caption {
+  display: none;
+}
+
+.sidebar tr {
+  margin: 2px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.sidebar th {
+  text-align: left;
+  font-weight: normal;
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.sidebar tr.sub th {
+  text-indent: 20px;
+}
+
+.sidebar td {
+  text-align: right;
+  min-width: 20px;
+}
+
+.sidebar a {
+  display: block;
+  text-decoration: none;
+  border-bottom: none;
+  padding: 4px 0;
+}
+
+.sidebar tr.active {
+  background: #ff0;
+}
+
+aside {
+  display: none;
+}
+
+aside.source {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  text-indent: 10px;
+}
+
+aside.page_number {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  text-indent: 10px;
+}
+
+/* Notes */
+
+.notes {
+  display: none;
+  padding: 10px;
+  background: #ccc;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+}
+
+div.slide p.notes {
+  font-size: 90%;
+}
+
+/* Pygments default theme */
+.hll { background-color: #ffffcc }
+.c { color: #408080; font-style: italic } /* Comment */
+.err { border: 1px solid #FF0000 } /* Error */
+.k { color: #008000; font-weight: bold } /* Keyword */
+.o { color: #666666 } /* Operator */
+.cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.cp { color: #BC7A00 } /* Comment.Preproc */
+.c1 { color: #408080; font-style: italic } /* Comment.Single */
+.cs { color: #408080; font-style: italic } /* Comment.Special */
+.gd { color: #A00000 } /* Generic.Deleted */
+.ge { font-style: italic } /* Generic.Emph */
+.gr { color: #FF0000 } /* Generic.Error */
+.gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.gi { color: #00A000 } /* Generic.Inserted */
+.go { color: #808080 } /* Generic.Output */
+.gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.gs { font-weight: bold } /* Generic.Strong */
+.gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.gt { color: #0040D0 } /* Generic.Traceback */
+.kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.kp { color: #008000 } /* Keyword.Pseudo */
+.kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.kt { color: #B00040 } /* Keyword.Type */
+.m { color: #666666 } /* Literal.Number */
+.s { color: #BA2121 } /* Literal.String */
+.na { color: #7D9029 } /* Name.Attribute */
+.nb { color: #008000 } /* Name.Builtin */
+.nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.no { color: #880000 } /* Name.Constant */
+.nd { color: #AA22FF } /* Name.Decorator */
+.ni { color: #999999; font-weight: bold } /* Name.Entity */
+.ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.nf { color: #0000FF } /* Name.Function */
+.nl { color: #A0A000 } /* Name.Label */
+.nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.nt { color: #008000; font-weight: bold } /* Name.Tag */
+.nv { color: #19177C } /* Name.Variable */
+.ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.w { color: #bbbbbb } /* Text.Whitespace */
+.mf { color: #666666 } /* Literal.Number.Float */
+.mh { color: #666666 } /* Literal.Number.Hex */
+.mi { color: #666666 } /* Literal.Number.Integer */
+.mo { color: #666666 } /* Literal.Number.Oct */
+.sb { color: #BA2121 } /* Literal.String.Backtick */
+.sc { color: #BA2121 } /* Literal.String.Char */
+.sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.s2 { color: #BA2121 } /* Literal.String.Double */
+.se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.sh { color: #BA2121 } /* Literal.String.Heredoc */
+.si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.sx { color: #008000 } /* Literal.String.Other */
+.sr { color: #BB6688 } /* Literal.String.Regex */
+.s1 { color: #BA2121 } /* Literal.String.Single */
+.ss { color: #19177C } /* Literal.String.Symbol */
+.bp { color: #008000 } /* Name.Builtin.Pseudo */
+.vc { color: #19177C } /* Name.Variable.Class */
+.vg { color: #19177C } /* Name.Variable.Global */
+.vi { color: #19177C } /* Name.Variable.Instance */
+.il { color: #666666 } /* Literal.Number.Integer.Long */
+
+    </style>
+    
+    <!-- /Styles -->
+    <!-- Javascripts -->
+    
+    <script>
+      function main() {
+  // Since we don't have the fallback of attachEvent and
+  // other IE only stuff we won't try to run JS for IE.
+  // It will run though when using Google Chrome Frame
+  if (document.all) { return; }
+
+  var currentSlideNo;
+  var notesWindow = null;
+  var slides = document.getElementsByClassName('slide');
+  var touchStartX = 0;
+  var spaces = /\s+/, a1 = [""];
+  var tocOpened = false;
+  var helpOpened = false;
+
+  var str2array = function(s) {
+    if (typeof s == "string" || s instanceof String) {
+      if (s.indexOf(" ") < 0) {
+        a1[0] = s;
+        return a1;
+      } else {
+        return s.split(spaces);
+      }
+    }
+    return s;
+  };
+
+  var trim = function(str) {
+    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  };
+
+  var addClass = function(node, classStr) {
+    classStr = str2array(classStr);
+    var cls = " " + node.className + " ";
+    for (var i = 0, len = classStr.length, c; i < len; ++i) {
+      c = classStr[i];
+      if (c && cls.indexOf(" " + c + " ") < 0) {
+        cls += c + " ";
+      }
+    }
+    node.className = trim(cls);
+  };
+
+  var removeClass = function(node, classStr) {
+    var cls;
+    if (classStr !== undefined) {
+      classStr = str2array(classStr);
+      cls = " " + node.className + " ";
+      for (var i = 0, len = classStr.length; i < len; ++i) {
+        cls = cls.replace(" " + classStr[i] + " ", " ");
+      }
+      cls = trim(cls);
+    } else {
+      cls = "";
+    }
+    if (node.className != cls) {
+      node.className = cls;
+    }
+  };
+
+  var getSlideEl = function(slideNo) {
+    if (slideNo > 0) {
+      return slides[slideNo - 1];
+    } else {
+      return null;
+    }
+  };
+
+  var getSlideTitle = function(slideNo) {
+    var el = getSlideEl(slideNo);
+    if (el) {
+      var headers = el.getElementsByTagName('header');
+      if (headers.length > 0) {
+        return el.getElementsByTagName('header')[0].innerText;
+      }
+    }
+    return null;
+  };
+
+  var changeSlideElClass = function(slideNo, className) {
+    var el = getSlideEl(slideNo);
+    if (el) {
+      removeClass(el, 'far-past past current future far-future');
+      addClass(el, className);
+    }
+  };
+
+  var updateSlideClasses = function() {
+    window.location.hash = "slide" + currentSlideNo;
+
+    for (var i=1; i<currentSlideNo-1; i++) {
+      changeSlideElClass(i, 'far-past');
+    }
+
+    changeSlideElClass(currentSlideNo - 1, 'past');
+    changeSlideElClass(currentSlideNo, 'current');
+    changeSlideElClass(currentSlideNo + 1, 'future');
+
+    for (i=currentSlideNo+2; i<slides.length+1; i++) {
+      changeSlideElClass(i, 'far-future');
+    }
+
+    highlightCurrentTocLink();
+
+    document.getElementsByTagName('title')[0].innerText = getSlideTitle(currentSlideNo);
+
+    if (notesWindow != null) {
+      var out = '';
+      var notes = getSlideEl(currentSlideNo).getElementsByClassName('notes');
+      for (var i = 0, len = notes.length; i < len; i++) {
+        out = out + notes.item(i).textContent + '<p>\n';
+      }
+      notesWindow.document.body.innerHTML = out;
+    }
+  };
+
+  var highlightCurrentTocLink = function() {
+    var toc = document.getElementById('toc');
+
+    if (toc) {
+      var tocRows = toc.getElementsByTagName('tr');
+      for (var i=0; i<tocRows.length; i++) {
+        removeClass(tocRows.item(i), 'active');
+      }
+
+      var currentTocRow = document.getElementById('toc-row-' + currentSlideNo);
+      if (currentTocRow) {
+        addClass(currentTocRow, 'active');
+      }
+    }
+  };
+
+  var nextSlide = function() {
+    if (currentSlideNo < slides.length) {
+      currentSlideNo++;
+    }
+    updateSlideClasses();
+  };
+
+  var prevSlide = function() {
+    if (currentSlideNo > 1) {
+      currentSlideNo--;
+    }
+    updateSlideClasses();
+  };
+
+  var showNotes = function() {
+    var notes = getSlideEl(currentSlideNo).getElementsByClassName('notes');
+    /*for (var i = 0, len = notes.length; i < len; i++) {
+      notes.item(i).style.display = (notesOn) ? 'none':'block';
+    }*/
+    if (notesWindow == null) {
+      console.log('test');
+      notesWindow = window.open(
+          'about:blank',
+          'nom', 'scrollbars=yes,width=550,height=600');
+    } else {
+      notesWindow.close();
+      notesWindow = null;
+    }
+    updateSlideClasses();
+  };
+
+  var showSlideNumbers = function() {
+    var asides = document.getElementsByClassName('page_number');
+    var hidden = asides[0].style.display != 'block';
+    for (var i = 0; i < asides.length; i++) {
+      asides.item(i).style.display = hidden ? 'block' : 'none';
+    }
+  };
+
+  var showSlideSources = function() {
+    var asides = document.getElementsByClassName('source');
+    var hidden = asides[0].style.display != 'block';
+    for (var i = 0; i < asides.length; i++) {
+      asides.item(i).style.display = hidden ? 'block' : 'none';
+    }
+  };
+
+  var showToc = function() {
+    if (helpOpened) {
+        showHelp();
+    }
+
+    var toc = document.getElementById('toc');
+
+    if (toc) {
+      toc.style.marginLeft = tocOpened ? '-400px' : '0px';
+      tocOpened = !tocOpened;
+    }
+  };
+
+  var showHelp = function() {
+    var help = document.getElementById('help');
+
+    help.style.marginLeft = helpOpened ? '-400px' : '0px';
+
+    helpOpened = !helpOpened;
+  };
+
+  var switch3D = function() {
+    if (document.body.className.indexOf('three-d') == -1) {
+      document.getElementsByClassName('presentation')[0].style.webkitPerspective = '1000px';
+      document.body.className += ' three-d';
+    } else {
+      window.setTimeout("document.getElementsByClassName('presentation')[0].style.webkitPerspective = '0';", 2000);
+      document.body.className = document.body.className.replace(/three-d/, '');
+    }
+  };
+
+  var handleBodyKeyDown = function(event) {
+    switch (event.keyCode) {
+      case 37: // left arrow
+        prevSlide();
+        break;
+      case 39: // right arrow
+      case 32: // space
+        nextSlide();
+        break;
+      case 50: // 2
+        showNotes();
+        break;
+      case 51: // 3
+        switch3D();
+        break;
+      case 72: // h
+        showHelp();
+        break;
+      case 78: // n
+        showSlideNumbers();
+        break;
+      case 83: // s
+        showSlideSources();
+        break;
+      case 84: // t
+        showToc();
+        break;
+    }
+  };
+
+  var handleWheel = function(event) {
+    if (tocOpened || helpOpened) {
+      return;
+    }
+
+    var delta = 0;
+
+    if (!event) {
+      event = window.event;
+    }
+
+    if (event.wheelDelta) {
+      delta = event.wheelDelta/120;
+      if (window.opera) delta = -delta;
+    } else if (event.detail) {
+      delta = -event.detail/3;
+    }
+
+    if (delta && delta <0) {
+      nextSlide();
+    } else if (delta) {
+      prevSlide();
+    }
+  };
+
+  var addTouchListeners = function() {
+    document.addEventListener('touchstart', function(e) {
+      touchStartX = e.touches[0].pageX;
+    }, false);
+    document.addEventListener('touchend', function(e) {
+      var pixelsMoved = touchStartX - e.changedTouches[0].pageX;
+      var SWIPE_SIZE = 150;
+      if (pixelsMoved > SWIPE_SIZE) {
+        nextSlide();
+      }
+      else if (pixelsMoved < -SWIPE_SIZE) {
+       prevSlide();
+      }
+    }, false);
+  };
+
+  var addTocLinksListeners = function() {
+    var toc = document.getElementById('toc');
+
+    if (toc) {
+      var tocLinks = toc.getElementsByTagName('a');
+      for (var i=0; i < tocLinks.length; i++) {
+        tocLinks.item(i).addEventListener('click', function(e) {
+          currentSlideNo = Number(this.attributes['href'].value.replace('#slide', ''));
+          updateSlideClasses();
+          return false;
+        }, true);
+      }
+    }
+  };
+
+  // initialize
+
+  (function() {
+    if (window.location.hash != "") {
+      currentSlideNo = Number(window.location.hash.replace('#slide', ''));
+    } else {
+      currentSlideNo = 1;
+    }
+
+    document.addEventListener('keydown', handleBodyKeyDown, false);
+    document.addEventListener('DOMMouseScroll', handleWheel, false);
+    window.onmousewheel = document.onmousewheel = handleWheel;
+
+    var els = slides;
+    for (var i = 0, el; el = els[i]; i++) {
+      addClass(el, 'slide far-future');
+    }
+    updateSlideClasses();
+
+    // add support for finger events (filter it by property detection?)
+    addTouchListeners();
+
+    addTocLinksListeners();
+  })();
+};
+
+    </script>
+    
+    <!-- /Javascripts -->
+</head>
+<body>
+  <div class="presentation">
+    <div class="slides">
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide main_slide">
+        <div class="inner">
+          
+            
+            <div class="title"><h1>git</h1></div>
+            
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            1/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Preambule</h1></header>
+            
+            
+            <section><h2>Tips and recipes are using git-svn based chromium workflow as examples.</h2>
+<p>git makes you feel stupid, by design. It doesn't mean you are, it's just hard to
+get to know enough to be efficient, a bit like C++.</p>
+<p>This presentation assumes you've already played with git a little and banged
+your head on the wall a few times. Otherwise, you may want to review a <a href="http://marklodato.github.com/visual-git-guide/index-en.html">visual
+git reference</a>
+first.</p>
+<p>Press <code>t</code> to see the table of content.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            2/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Schedule</h1></header>
+            
+            
+            <section><ul>
+<li>Useful tools</li>
+<li>Concepts</li>
+<li>Pipelining</li>
+<li>Finding lost changes</li>
+<li>Squashing</li>
+<li>Reverting a single file</li>
+<li>Splitting a single commit in two</li>
+<li>3 ways push and pull</li>
+</ul></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            3/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Tools</h1></header>
+            
+            
+            <section><p>You <em>need</em> these tools to be efficient.</p>
+<ul>
+<li><a href="http://github.com/maruel/bin_pub">maruel's bin_pub</a> will give you a head
+    start on how to setup your configuration, in particular you want
+    configs/.gitconfig, configs/.git-prompt.conf, autodiff.</li>
+<li><a href="https://github.com/lvv/git-prompt">git-prompt</a> is extremely useful for bash
+    users. It shows the status of your git and svn checkout. The initial cd into
+    versioned directory is slow so you may want to disable some functionality.<ul>
+<li>git-prompt is slow on cygwin, borderline usable but I hardly can live
+    without it.</li>
+</ul>
+</li>
+<li>Make sure bash completion is enabled.</li>
+<li><a href="kdiff3">kdiff3</a> is a great 3-ways merge tool, available on all platforms.</li>
+</ul></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            4/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Basic concepts</h1></header>
+            
+            
+            <section><ul>
+<li>Named branches or tags points to a commit hash</li>
+<li>A commit hash is enough to have all the commit linear history up to the
+     initial commit.</li>
+<li>Commit hash not referenced by any commit referenced by a named branch or
+     tag will be deleted on next garbage collection, git gc.</li>
+<li>A named branch can be reset to arbitrary new hash, which happens when you
+     rebase.</li>
+</ul>
+<p>If it's still unclear to you, the rest of this document may sound like foreign
+language. It'll be easier if you refer back to the topics as you are trying
+them, like for instance a pipelined review or squashing a change.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            5/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Basic concepts (suite)</h2></header>
+            
+            
+            <section><p>The following assumes you know the aliases in bin_pub:</p>
+<pre><code>st = status
+co = checkout
+ci = commit
+br = branch
+sr = svn rebase
+</code></pre>
+<p><code>git ci -a -m.</code> does a commit with the message ".". It's faster because it's
+doesn't brings up the text editor. It adds changes to all tracked files but
+<em>not</em> untracked files, e.g. new files. For this, you need to use <code>git add -A .</code></p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            6/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Local versus remote</h2></header>
+            
+            
+            <section><p>It is easy to confuse with local and remote branch. Remote branches on a git
+repo are caches of the actual remote branches. Beware of <code>/</code> in branch names.
+Try this at home to be confused:</p>
+<pre><code>git co -b origin/trunk origin/trunk
+git br -a
+</code></pre>
+<p>To delete the <em>local</em> branch named like a <em>remote</em> branch, use:</p>
+<pre><code>git br -D origin/trunk
+</code></pre>
+<p>When <code>pull</code>ing or <code>fetch</code>ing, use <code>--prune</code> to remove the cache of remotely
+deleted branches.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            7/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Tracking branch</h2></header>
+            
+            
+            <section><p>A tracked branch is the default branch that will be used when <code>pull</code>ing.</p>
+<p>It's also used by <code>git-cl</code> to diff against. You can set a tracking branch with
+<code>br --set-track</code> or specifying the optional tracking branch when <code>co -b
+&lt;new_branch&gt; &lt;tracked branch&gt;</code>.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            8/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Serial vs parallel</h2></header>
+            
+            
+            <section><p>You can do multiple changes in <em>parallel</em> if they are independent of each other.
+On svn, you can have multiple gcl changes on different files or with multiple
+checkouts. You cannot do serialized changes.</p>
+<p>On git you can do <em>serial</em> changes. This means some changes depends on the
+previous changes to be committed. For instance you have the first change
+implementing an interface and the second one using it. You cannot commit the
+second one before committing the first one.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            9/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Pipelining</h1></header>
+            
+            
+            <section><p>Pipelining is the fact of serializing multiple changes instead of sending them
+in parallel. It happens when a change cannot be done before the previous change
+is checked in. By pipelining reviews, you reduce the impact of <em>review latency</em>
+by continuing to work on your next patch. The cost is when changes are requested
+on your review, you will get rebase conflicts.</p>
+<p>You cannot pipeline with svn, but you can do parallel changes by having multiple
+checkouts. On git, parallel changes is simply having 2 unrelated branches based
+of master or trunk.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            10/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Pipelining sample</h2></header>
+            
+            
+            <section><pre><code>git co -b 1_foo origin/trunk
+git cl upload -r foo@chromium.org --send-mail
+touch bar
+git ci -a -m.
+git co -b 2_bar
+# Edit the file even more.
+touch bar
+# Send the review against the previous branch.
+git cl upload -r foo@chromium.org 1_foo
+git co -b 3_bar
+touch bar
+git ci -a -m .
+git cl upload -r foo@chromium.org 2_bar
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            11/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Pipelining sample (part 2)</h2></header>
+            
+            
+            <section><pre><code># Go back to first branch as reviewer sent his
+# comments.
+git co 1_foo
+# Do silly style nits he requested.
+touch bar
+# Amend the commit to keep the number of commit
+# unchanged in the 'commit log'.
+git ci -a --amend
+# Upload a new patchset for rietveld issue
+# associated with 1_foo.
+git cl upload
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            12/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Pipelining sample (part 3)</h2></header>
+            
+            
+            <section><p>Now that the original branch <code>1_foo</code> doesn't point to the original hash but a
+new totally unrelated hash, we need to rebase <code>2_bar</code> against the <em>new</em> <code>1_foo</code>:</p>
+<pre><code># Rebase the branch.
+git co 2_bar
+git rebase 1_foo
+# Only if conflicts.
+git mergetool
+git rebase --continue
+# Now 2_bar is rebased against the 'new'
+# 1_foo. Upload a new patchset.
+git cl upload 1_foo
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            13/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Finding lost changes</h1></header>
+            
+            
+            <section><p>It's easy to delete a branch by error. But git is no stupid and doesn't delete
+information.</p>
+<p>Rebasing is somehow creating a new branch and deleting the old one, if your
+rebase was done incorrectly, you may want to find the previous commit tree.</p>
+<pre><code>git reflog
+git co &lt;hash&gt;
+git co -b forgotten_branch
+</code></pre>
+<p>Or use the format <code>HEAD@{3}</code> or <code>ORIG_HEAD</code>. Google for more details. You can
+revert the last 3 commits by checking out <code>HEAD~3</code> or <code>HEAD^^^</code>.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            14/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Squashing</h1></header>
+            
+            
+            <section><p><em>Committing often</em> is important with git. Often, commits don't stand on their
+own, they are worth squashing together.</p>
+<pre><code># Make sure rebase is clean.
+git rebase trunk
+# Rebase in interactive mode.
+git rebase trunk -i
+# Put `s` on every commit you want to squash.
+# Then edit new commit description.
+</code></pre>
+<p><em>Warning:</em> squash and merges don't play well together. git won't let
+you squash multiple changes with a merge in the lot. You'll need to squash the
+merge on its own.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            15/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Merge vs Rebase</h1></header>
+            
+            
+            <section><p>General wisdom:</p>
+<ul>
+<li>Merge = upstream is git</li>
+<li>Rebase = upstream is svn</li>
+</ul>
+<p>Merging keeps the (non-linear) history, rebasing "linearilize" the history,
+keeping it simpler but you <em>must not</em> rebase a branch once you've pushed.</p>
+<p>You can rebase when <code>pull</code>ing with <code>--rebase</code>. It's the equivalent of <code>fetch</code> &amp;&amp;
+<code>rebase &lt;tracked branch&gt;</code>.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            16/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Reverting a single file</h1></header>
+            
+            
+            <section><p>You can simply checkout a single file from another branch.</p>
+<pre><code>git co master -- path/to/screwed.cc
+git ci --amend
+</code></pre>
+<p>The <code>--</code> separates branch name from the files list.</p>
+<p>You can use wildcards in quotes: <code>"tools/*.py"</code>, otherwise bash will interprets
+it. It's simpler and safer to checkout than reset.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            17/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Splitting a commit in 2</h1></header>
+            
+            
+            <section><p>Sometimes you start hacking on a source file to realize it should be sent as two
+separate reviews.</p>
+<p>To split a single commit in two:</p>
+<ul>
+<li>Create a new branch against master.</li>
+<li>Use <code>add -p</code> to add <em>parts of a file</em> to the index.</li>
+<li><code>commit</code> the first part in a named branch without using <code>-a</code>.</li>
+<li><code>commit</code> the remaining in another pipelined branch using <code>-a</code>.</li>
+</ul></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            18/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Splitting a commit in 2 (sample)</h2></header>
+            
+            
+            <section><pre><code>git co -b 1_foo master
+# Read git merge man page.
+git merge --squash crappy_change
+# Remove everything from the index.
+git reset --mixed
+# Add only stuff you want
+git add -p
+git ci -m "Part 1"
+git co -b 2_bar
+# Add now unversioned files.
+git add -A .
+git ci -m "Part 2"
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            19/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>It's warmer in 3 ways</h1></header>
+            
+            
+            <section><p>It's hard to set partners right to achieve a 3 ways but it is useful in
+<em>collaborative</em> environment. Examples:</p>
+<ul>
+<li>Users are fetching chromium.git as the official git-svn clone and want to
+    exchange <em>stuff</em>.</li>
+<li>Users are fetching from <a href="http://git.kernel.org">http://git.kernel.org</a> and want to share
+    bits of hash.</li>
+</ul>
+<p>In that scenario, they can push and pull directly from each others, without
+having to access the remote <em>official</em> repository at all. With hashes, they can
+confirm the whole history of commit without fear. The trick here is to <em>merge</em>
+and not <em>rebase</em> so the history relationship is kept.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            20/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Cloning from multiple repos</h2></header>
+            
+            
+            <section><p>Use case: clone the git repo from your workstation to your laptop so you can
+work during your MTV visit.</p>
+<pre><code># Computer #1 (initial setup on workstation)
+git clone \
+  http://git.chromium.org/git/chromium.git \
+  ~/path/to/src
+# Computer #2 (the laptop)
+git clone computer_1:path/to/src
+# 3rd way.
+git add remote official \
+  http://git.chromium.org/git/chromium.git
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            21/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Cloning from multiple repos (suite)</h2></header>
+            
+            
+            <section><pre><code># Now you can sync once in a while from
+# wherever you want.
+git pull official trunk
+# And push a specific branch
+git co awesome
+# 'origin' is the workstation
+git push awesome origin awesome
+# To make sure everything is in order
+git remote -v
+</code></pre>
+<p>This way, you can continue to work on your laptop seamlessly, and push back your
+changes to your workstation to continue working once you're back on the ground.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            22/23
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h1>Random stuff</h1></header>
+            
+            
+            <section><p>People working on chromium.git may want to have separate checkouts for their
+branches to improve compilation speed; switching branch forces rebuilding a lot
+of files; See <a href="http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/workdir/git-new-workdir">git-new-workdir in
+contrib</a>
+more details.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            23/23
+          </aside>
+        </footer>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div id="toc" class="sidebar hidden">
+    <h2>Table of Contents</h2>
+    <table>
+      <caption>Table of Contents</caption>
+            
+      <tr id="toc-row-1">
+        <th><a href="#slide1">git</a></th>
+        <td><a href="#slide1">1</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-2">
+        <th><a href="#slide2">Preambule</a></th>
+        <td><a href="#slide2">2</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-3">
+        <th><a href="#slide3">Schedule</a></th>
+        <td><a href="#slide3">3</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-4">
+        <th><a href="#slide4">Tools</a></th>
+        <td><a href="#slide4">4</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-5">
+        <th><a href="#slide5">Basic concepts</a></th>
+        <td><a href="#slide5">5</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-6" class="sub">
+          <th><a href="#slide6">Basic concepts (suite)</a></th>
+          <td><a href="#slide6">6</a></td>
+        </tr>
+        
+        <tr id="toc-row-7" class="sub">
+          <th><a href="#slide7">Local versus remote</a></th>
+          <td><a href="#slide7">7</a></td>
+        </tr>
+        
+        <tr id="toc-row-8" class="sub">
+          <th><a href="#slide8">Tracking branch</a></th>
+          <td><a href="#slide8">8</a></td>
+        </tr>
+        
+        <tr id="toc-row-9" class="sub">
+          <th><a href="#slide9">Serial vs parallel</a></th>
+          <td><a href="#slide9">9</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-10">
+        <th><a href="#slide10">Pipelining</a></th>
+        <td><a href="#slide10">10</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-11" class="sub">
+          <th><a href="#slide11">Pipelining sample</a></th>
+          <td><a href="#slide11">11</a></td>
+        </tr>
+        
+        <tr id="toc-row-12" class="sub">
+          <th><a href="#slide12">Pipelining sample (part 2)</a></th>
+          <td><a href="#slide12">12</a></td>
+        </tr>
+        
+        <tr id="toc-row-13" class="sub">
+          <th><a href="#slide13">Pipelining sample (part 3)</a></th>
+          <td><a href="#slide13">13</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-14">
+        <th><a href="#slide14">Finding lost changes</a></th>
+        <td><a href="#slide14">14</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-15">
+        <th><a href="#slide15">Squashing</a></th>
+        <td><a href="#slide15">15</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-16">
+        <th><a href="#slide16">Merge vs Rebase</a></th>
+        <td><a href="#slide16">16</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-17">
+        <th><a href="#slide17">Reverting a single file</a></th>
+        <td><a href="#slide17">17</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-18">
+        <th><a href="#slide18">Splitting a commit in 2</a></th>
+        <td><a href="#slide18">18</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-19" class="sub">
+          <th><a href="#slide19">Splitting a commit in 2 (sample)</a></th>
+          <td><a href="#slide19">19</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-20">
+        <th><a href="#slide20">It's warmer in 3 ways</a></th>
+        <td><a href="#slide20">20</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-21" class="sub">
+          <th><a href="#slide21">Cloning from multiple repos</a></th>
+          <td><a href="#slide21">21</a></td>
+        </tr>
+        
+        <tr id="toc-row-22" class="sub">
+          <th><a href="#slide22">Cloning from multiple repos (suite)</a></th>
+          <td><a href="#slide22">22</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-23">
+        <th><a href="#slide23">Random stuff</a></th>
+        <td><a href="#slide23">23</a></td>
+      </tr>
+      
+      
+    </table>
+  </div>
+  
+  <div id="help" class="sidebar hidden">
+    <h2>Help</h2>
+    <table>
+      <caption>Help</caption>
+      <tr>
+        <th>Table of Contents</th>
+        <td>t</td>
+      </tr>
+      <tr>
+        <th>Source Files</th>
+        <td>s</td>
+      </tr>
+      <tr>
+        <th>Slide Numbers</th>
+        <td>n</td>
+      </tr>
+      <tr>
+        <th>Notes</th>
+        <td>2</td>
+      </tr>
+      <tr>
+        <th>Help</th>
+        <td>h</td>
+      </tr>
+    </table>
+  </div>
+  <script>main()</script>
+</body>
+</html>
