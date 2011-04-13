@@ -151,11 +151,12 @@ Pipelining sample
     git co -b 1_foo origin/trunk
     touch bar;  git ci -a -m.
     git cl upload -r foo@chromium.org --send-mail
+
     git co -b 2_bar
-    # Edit the file even more.
     touch bar;  git ci -a -m.
     # Send the review against the previous branch.
     git cl upload -r foo@chromium.org 1_foo
+
     git co -b 3_bar
     touch bar; git ci -a -m .
     # Again.
@@ -242,14 +243,14 @@ Manual Squashing (example)
 
 Which brings up:
 
-    pick 49a8dd7 Force all unit tests to run with python 2.5 interpreter.
+    pick 49a8dd7 Force all unit tests to run.
     pick 2c86ef4 .
     pick 0ab32a4 .
     pick 742d03d .
 
 To squash effectively, replace the text to:
 
-    pick 49a8dd7 Force all unit tests to run with python 2.5 interpreter.
+    pick 49a8dd7 Force all unit tests to run.
     s 2c86ef4 .
     s 0ab32a4 .
     s 742d03d .
@@ -259,12 +260,14 @@ To squash effectively, replace the text to:
 Automatic squashing
 -------------------
 
-You can simply use my `git squash` alias instead from
+Instead, you can simply use my `git squash` alias from
 [bin_pub/configs/.gitconfig](
-https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig). This will do
-the same as the manual example from the last slide. Manual squashing is still
-useful to cherry-pick a change _out_ of your squash.
+https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig).
 
+This will do the same as the manual example from the last slide. Manual
+squashing is still useful to cherry-pick a change _out_ of your squash.
+
+---
 
 Merge vs Rebase
 ===============
@@ -324,8 +327,10 @@ Splitting a commit in 2 (sample)
     git add -p
     # Do not use -a !
     git ci -m "Part 1"
+
     git co -b 2_bar
-    # Add now unversioned files.
+    # Adds unversioned files since
+    # reset --mixed will drop them.
     git add -A .
     git ci -m "Part 2"
 
@@ -395,6 +400,20 @@ To push on a repository that has the branch checked out, you'll need to set
 So you will be warned if you push to a repository but it will still let it
 through. Once you back at the workstation you will want to `git reset --hard` to
 reset the files to match what is in the index.
+
+---
+
+Pushing all branches automatically
+----------------------------------
+
+Let's say you have a remote named `workstation` and you are working on your
+laptop.
+
+When you push, you want to push all the branches all the time since your
+workstaiton is the golden copy, then set this configuration:
+
+    git config remote.workstation.push \
+        "+refs/heads/*:refs/remotes/workstation/*
 
 ---
 
