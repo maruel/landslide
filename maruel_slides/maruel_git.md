@@ -406,23 +406,34 @@ reset the files to match what is in the index.
 Pushing all branches automatically
 ----------------------------------
 
-Let's say you have a remote named `workstation` and you are working on your
-laptop.
+Let's say you have a remote named `origin`, which is your workstation and you
+are working on your laptop.
 
 When you push, you want to push all the branches all the time since your
-workstaiton is the golden copy, then set this configuration:
+workstation is the golden copy, then set this configuration:
 
-    git config remote.workstation.push \
-        "+refs/heads/*:refs/remotes/workstation/*
+    git config remote.origin.push \
+        "+refs/heads/*:refs/remotes/laptop/*"
+
+This will push all your local branches as *remote branches* on the remote
+repository, as if they were on the remote repository "laptop".
 
 ---
 
 Random stuff
 ============
 
-People working on chromium.git may want to have separate checkouts for their
-branches to improve compilation speed; switching branch forces rebuilding a lot
-of files; See [git-new-workdir in
+People working on
+[chromium.git](http://code.google.com/p/chromium/wiki/UsingGit) may want to have
+separate checkouts for their branches to improve compilation speed; switching
+branch forces rebuilding a lot of files; See [git-new-workdir in
 contrib](http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/workdir/git-new-workdir)
 more details.
 
+I heard [Linus uses cvs at home](http://www.youtube.com/watch?v=CDeG4S-mJts):
+
+    « What will you idiots do next?
+      Force everyone to use emacs? »
+
+Look for [more git aliases](https://git.wiki.kernel.org/index.php/Aliases) on
+the official git wiki.
