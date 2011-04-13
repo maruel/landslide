@@ -9,3 +9,4 @@ dist/
 landslide/.idea
 samples/.DS_Store
 src/landslide.egg-info/
+/maruel_slides/*.html
