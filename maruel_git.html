@@ -823,7 +823,7 @@ div.slide p.notes {
           </aside>
           
           <aside class="page_number">
-            1/23
+            1/27
           </aside>
         </footer>
       </div>
@@ -833,7 +833,7 @@ div.slide p.notes {
         <div class="inner">
           
             
-            <header><h1>Preambule</h1></header>
+            <header><h1>Preamble</h1></header>
             
             
             <section><h2>Tips and recipes are using git-svn based chromium workflow as examples.</h2>
@@ -854,7 +854,7 @@ first.</p>
           </aside>
           
           <aside class="page_number">
-            2/23
+            2/27
           </aside>
         </footer>
       </div>
@@ -887,7 +887,7 @@ first.</p>
           </aside>
           
           <aside class="page_number">
-            3/23
+            3/27
           </aside>
         </footer>
       </div>
@@ -925,7 +925,7 @@ first.</p>
           </aside>
           
           <aside class="page_number">
-            4/23
+            4/27
           </aside>
         </footer>
       </div>
@@ -960,7 +960,7 @@ them, like for instance a pipelined review or squashing a change.</p></section>
           </aside>
           
           <aside class="page_number">
-            5/23
+            5/27
           </aside>
         </footer>
       </div>
@@ -993,7 +993,7 @@ doesn't brings up the text editor. It adds changes to all tracked files but
           </aside>
           
           <aside class="page_number">
-            6/23
+            6/27
           </aside>
         </footer>
       </div>
@@ -1027,7 +1027,7 @@ deleted branches.</p></section>
           </aside>
           
           <aside class="page_number">
-            7/23
+            7/27
           </aside>
         </footer>
       </div>
@@ -1054,7 +1054,7 @@ deleted branches.</p></section>
           </aside>
           
           <aside class="page_number">
-            8/23
+            8/27
           </aside>
         </footer>
       </div>
@@ -1084,7 +1084,7 @@ second one before committing the first one.</p></section>
           </aside>
           
           <aside class="page_number">
-            9/23
+            9/27
           </aside>
         </footer>
       </div>
@@ -1115,7 +1115,7 @@ of master or trunk.</p></section>
           </aside>
           
           <aside class="page_number">
-            10/23
+            10/27
           </aside>
         </footer>
       </div>
@@ -1129,17 +1129,17 @@ of master or trunk.</p></section>
             
             
             <section><pre><code>git co -b 1_foo origin/trunk
+touch bar;  git ci -a -m.
 git cl upload -r foo@chromium.org --send-mail
-touch bar
-git ci -a -m.
+
 git co -b 2_bar
-# Edit the file even more.
-touch bar
+touch bar;  git ci -a -m.
 # Send the review against the previous branch.
 git cl upload -r foo@chromium.org 1_foo
+
 git co -b 3_bar
-touch bar
-git ci -a -m .
+touch bar; git ci -a -m .
+# Again.
 git cl upload -r foo@chromium.org 2_bar
 </code></pre></section>
             
@@ -1152,7 +1152,7 @@ git cl upload -r foo@chromium.org 2_bar
           </aside>
           
           <aside class="page_number">
-            11/23
+            11/27
           </aside>
         </footer>
       </div>
@@ -1187,7 +1187,7 @@ git cl upload
           </aside>
           
           <aside class="page_number">
-            12/23
+            12/27
           </aside>
         </footer>
       </div>
@@ -1222,7 +1222,7 @@ git cl upload 1_foo
           </aside>
           
           <aside class="page_number">
-            13/23
+            13/27
           </aside>
         </footer>
       </div>
@@ -1235,7 +1235,7 @@ git cl upload 1_foo
             <header><h1>Finding lost changes</h1></header>
             
             
-            <section><p>It's easy to delete a branch by error. But git is no stupid and doesn't delete
+            <section><p>It's easy to delete a branch by error. But git is not stupid and doesn't delete
 information.</p>
 <p>Rebasing is somehow creating a new branch and deleting the old one, if your
 rebase was done incorrectly, you may want to find the previous commit tree.</p>
@@ -1255,7 +1255,7 @@ revert the last 3 commits by checking out <code>HEAD~3</code> or <code>HEAD^^^</
           </aside>
           
           <aside class="page_number">
-            14/23
+            14/27
           </aside>
         </footer>
       </div>
@@ -1290,7 +1290,71 @@ merge on its own.</p></section>
           </aside>
           
           <aside class="page_number">
-            15/23
+            15/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Manual Squashing (example)</h2></header>
+            
+            
+            <section><pre><code>$ git rebase -i trunk
+</code></pre>
+<p>Which brings up:</p>
+<pre><code>pick 49a8dd7 Force all unit tests to run.
+pick 2c86ef4 .
+pick 0ab32a4 .
+pick 742d03d .
+</code></pre>
+<p>To squash effectively, replace the text to:</p>
+<pre><code>pick 49a8dd7 Force all unit tests to run.
+s 2c86ef4 .
+s 0ab32a4 .
+s 742d03d .
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            16/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Automatic squashing</h2></header>
+            
+            
+            <section><p>Instead, you can simply use my <code>git squash</code> alias from
+<a href="https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig">bin_pub/configs/.gitconfig</a>.</p>
+<p>This will do the same as the manual example from the last slide. Manual
+squashing is still useful to cherry-pick a change <em>out</em> of your squash.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            17/27
           </aside>
         </footer>
       </div>
@@ -1322,7 +1386,7 @@ keeping it simpler but you <em>must not</em> rebase a branch once you've pushed.
           </aside>
           
           <aside class="page_number">
-            16/23
+            18/27
           </aside>
         </footer>
       </div>
@@ -1352,7 +1416,7 @@ it. It's simpler and safer to checkout than reset.</p></section>
           </aside>
           
           <aside class="page_number">
-            17/23
+            19/27
           </aside>
         </footer>
       </div>
@@ -1384,7 +1448,7 @@ separate reviews.</p>
           </aside>
           
           <aside class="page_number">
-            18/23
+            20/27
           </aside>
         </footer>
       </div>
@@ -1404,9 +1468,12 @@ git merge --squash crappy_change
 git reset --mixed
 # Add only stuff you want
 git add -p
+# Do not use -a !
 git ci -m "Part 1"
+
 git co -b 2_bar
-# Add now unversioned files.
+# Adds unversioned files since
+# reset --mixed will drop them.
 git add -A .
 git ci -m "Part 2"
 </code></pre></section>
@@ -1420,7 +1487,7 @@ git ci -m "Part 2"
           </aside>
           
           <aside class="page_number">
-            19/23
+            21/27
           </aside>
         </footer>
       </div>
@@ -1455,7 +1522,7 @@ and not <em>rebase</em> so the history relationship is kept.</p></section>
           </aside>
           
           <aside class="page_number">
-            20/23
+            22/27
           </aside>
         </footer>
       </div>
@@ -1490,7 +1557,7 @@ git add remote official \
           </aside>
           
           <aside class="page_number">
-            21/23
+            23/27
           </aside>
         </footer>
       </div>
@@ -1525,7 +1592,66 @@ changes to your workstation to continue working once you're back on the ground.<
           </aside>
           
           <aside class="page_number">
-            22/23
+            24/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Pushing to non-bare repositories</h2></header>
+            
+            
+            <section><p>To push on a repository that has the branch checked out, you'll need to set</p>
+<pre><code>git config receive.denyCurrentBranch = warn
+</code></pre>
+<p>So you will be warned if you push to a repository but it will still let it
+through. Once you back at the workstation you will want to <code>git reset --hard</code> to
+reset the files to match what is in the index.</p></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            25/27
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: ./maruel_git.md -->
+      <div class="slide normal_slide">
+        <div class="inner">
+          
+            
+            <header><h2>Pushing all branches automatically</h2></header>
+            
+            
+            <section><p>Let's say you have a remote named <code>workstation</code> and you are working on your
+laptop.</p>
+<p>When you push, you want to push all the branches all the time since your
+workstaiton is the golden copy, then set this configuration:</p>
+<pre><code>git config remote.workstation.push \
+    "+refs/heads/*:refs/remotes/workstation/*
+</code></pre></section>
+            
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///mnt/seagate1.5tb/maruel/src/landslide/maruel_slides/maruel_git.md">./maruel_git.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            26/27
           </aside>
         </footer>
       </div>
@@ -1553,7 +1679,7 @@ more details.</p></section>
           </aside>
           
           <aside class="page_number">
-            23/23
+            27/27
           </aside>
         </footer>
       </div>
@@ -1573,7 +1699,7 @@ more details.</p></section>
       
             
       <tr id="toc-row-2">
-        <th><a href="#slide2">Preambule</a></th>
+        <th><a href="#slide2">Preamble</a></th>
         <td><a href="#slide2">2</a></td>
       </tr>
       
@@ -1652,53 +1778,75 @@ more details.</p></section>
         <td><a href="#slide15">15</a></td>
       </tr>
       
-            
-      <tr id="toc-row-16">
-        <th><a href="#slide16">Merge vs Rebase</a></th>
-        <td><a href="#slide16">16</a></td>
-      </tr>
-      
-            
-      <tr id="toc-row-17">
-        <th><a href="#slide17">Reverting a single file</a></th>
-        <td><a href="#slide17">17</a></td>
-      </tr>
-      
-            
-      <tr id="toc-row-18">
-        <th><a href="#slide18">Splitting a commit in 2</a></th>
-        <td><a href="#slide18">18</a></td>
-      </tr>
-      
         
-        <tr id="toc-row-19" class="sub">
-          <th><a href="#slide19">Splitting a commit in 2 (sample)</a></th>
-          <td><a href="#slide19">19</a></td>
+        <tr id="toc-row-16" class="sub">
+          <th><a href="#slide16">Manual Squashing (example)</a></th>
+          <td><a href="#slide16">16</a></td>
+        </tr>
+        
+        <tr id="toc-row-17" class="sub">
+          <th><a href="#slide17">Automatic squashing</a></th>
+          <td><a href="#slide17">17</a></td>
         </tr>
         
       
             
+      <tr id="toc-row-18">
+        <th><a href="#slide18">Merge vs Rebase</a></th>
+        <td><a href="#slide18">18</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-19">
+        <th><a href="#slide19">Reverting a single file</a></th>
+        <td><a href="#slide19">19</a></td>
+      </tr>
+      
+            
       <tr id="toc-row-20">
-        <th><a href="#slide20">It's warmer in 3 ways</a></th>
+        <th><a href="#slide20">Splitting a commit in 2</a></th>
         <td><a href="#slide20">20</a></td>
       </tr>
       
         
         <tr id="toc-row-21" class="sub">
-          <th><a href="#slide21">Cloning from multiple repos</a></th>
+          <th><a href="#slide21">Splitting a commit in 2 (sample)</a></th>
           <td><a href="#slide21">21</a></td>
-        </tr>
-        
-        <tr id="toc-row-22" class="sub">
-          <th><a href="#slide22">Cloning from multiple repos (suite)</a></th>
-          <td><a href="#slide22">22</a></td>
         </tr>
         
       
             
-      <tr id="toc-row-23">
-        <th><a href="#slide23">Random stuff</a></th>
-        <td><a href="#slide23">23</a></td>
+      <tr id="toc-row-22">
+        <th><a href="#slide22">It's warmer in 3 ways</a></th>
+        <td><a href="#slide22">22</a></td>
+      </tr>
+      
+        
+        <tr id="toc-row-23" class="sub">
+          <th><a href="#slide23">Cloning from multiple repos</a></th>
+          <td><a href="#slide23">23</a></td>
+        </tr>
+        
+        <tr id="toc-row-24" class="sub">
+          <th><a href="#slide24">Cloning from multiple repos (suite)</a></th>
+          <td><a href="#slide24">24</a></td>
+        </tr>
+        
+        <tr id="toc-row-25" class="sub">
+          <th><a href="#slide25">Pushing to non-bare repositories</a></th>
+          <td><a href="#slide25">25</a></td>
+        </tr>
+        
+        <tr id="toc-row-26" class="sub">
+          <th><a href="#slide26">Pushing all branches automatically</a></th>
+          <td><a href="#slide26">26</a></td>
+        </tr>
+        
+      
+            
+      <tr id="toc-row-27">
+        <th><a href="#slide27">Random stuff</a></th>
+        <td><a href="#slide27">27</a></td>
       </tr>
       
       
