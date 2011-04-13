@@ -3,7 +3,7 @@ git
 
 ---
 
-Preambule
+Preamble
 =========
 
 ## Tips and recipes are using git-svn based chromium workflow as examples.
@@ -149,17 +149,16 @@ Pipelining sample
 -----------------
 
     git co -b 1_foo origin/trunk
+    touch bar;  git ci -a -m.
     git cl upload -r foo@chromium.org --send-mail
-    touch bar
-    git ci -a -m.
     git co -b 2_bar
     # Edit the file even more.
-    touch bar
+    touch bar;  git ci -a -m.
     # Send the review against the previous branch.
     git cl upload -r foo@chromium.org 1_foo
     git co -b 3_bar
-    touch bar
-    git ci -a -m .
+    touch bar; git ci -a -m .
+    # Again.
     git cl upload -r foo@chromium.org 2_bar
 
 ---
@@ -202,7 +201,7 @@ new totally unrelated hash, we need to rebase `2_bar` against the _new_ `1_foo`:
 Finding lost changes
 ====================
 
-It's easy to delete a branch by error. But git is no stupid and doesn't delete
+It's easy to delete a branch by error. But git is not stupid and doesn't delete
 information.
 
 Rebasing is somehow creating a new branch and deleting the old one, if your
@@ -235,6 +234,37 @@ you squash multiple changes with a merge in the lot. You'll need to squash the
 merge on its own.
 
 ---
+
+Manual Squashing (example)
+-------------------
+
+    $ git rebase -i trunk
+
+Which brings up:
+
+    pick 49a8dd7 Force all unit tests to run with python 2.5 interpreter.
+    pick 2c86ef4 .
+    pick 0ab32a4 .
+    pick 742d03d .
+
+To squash effectively, replace the text to:
+
+    pick 49a8dd7 Force all unit tests to run with python 2.5 interpreter.
+    s 2c86ef4 .
+    s 0ab32a4 .
+    s 742d03d .
+
+---
+
+Automatic squashing
+-------------------
+
+You can simply use my `git squash` alias instead from
+[bin_pub/configs/.gitconfig](
+https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig). This will do
+the same as the manual example from the last slide. Manual squashing is still
+useful to cherry-pick a change _out_ of your squash.
+
 
 Merge vs Rebase
 ===============
@@ -292,6 +322,7 @@ Splitting a commit in 2 (sample)
     git reset --mixed
     # Add only stuff you want
     git add -p
+    # Do not use -a !
     git ci -m "Part 1"
     git co -b 2_bar
     # Add now unversioned files.
@@ -351,6 +382,19 @@ Cloning from multiple repos (suite)
 
 This way, you can continue to work on your laptop seamlessly, and push back your
 changes to your workstation to continue working once you're back on the ground.
+
+---
+
+Pushing to non-bare repositories
+--------------------------------
+
+To push on a repository that has the branch checked out, you'll need to set
+
+    git config receive.denyCurrentBranch = warn
+
+So you will be warned if you push to a repository but it will still let it
+through. Once you back at the workstation you will want to `git reset --hard` to
+reset the files to match what is in the index.
 
 ---
 
