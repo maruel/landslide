@@ -836,14 +836,17 @@ div.slide p.notes {
             <header><h1>Preamble</h1></header>
             
             
-            <section><h2>Tips and recipes are using git-svn based chromium workflow as examples.</h2>
-<p>git makes you feel stupid, by design. It doesn't mean you are, it's just hard to
-get to know enough to be efficient, a bit like C++.</p>
+            <section><h2>Tips and recipes using git-svn chromium workflow.</h2>
+<p>git makes you feel stupid, by design. It doesn't mean you <em>are</em>, it's just hard
+to get to know enough to be efficient, like C++.</p>
 <p>This presentation assumes you've already played with git a little and banged
-your head on the wall a few times. Otherwise, you may want to review a <a href="http://marklodato.github.com/visual-git-guide/index-en.html">visual
-git reference</a>
-first.</p>
-<p>Press <code>t</code> to see the table of content.</p></section>
+your head on the wall a few times. Otherwise, you may want to review:</p>
+<ul>
+<li><a href="http://marklodato.github.com/visual-git-guide/index-en.html">visual git reference</a></li>
+<li><a href="http://library.edgecase.com/git_immersion">git immersion</a></li>
+<li><a href="http://ftp.newartisans.com/pub/git.from.bottom.up.pdf">git from the bottom up</a></li>
+</ul>
+<p>Press <code>t</code> to see the table of content and <code>h</code> for help.</p></section>
             
           
         </div>
@@ -873,9 +876,11 @@ first.</p>
 <li>Pipelining</li>
 <li>Finding lost changes</li>
 <li>Squashing</li>
+<li>Merge vs Rebase</li>
 <li>Reverting a single file</li>
 <li>Splitting a single commit in two</li>
 <li>3 ways push and pull</li>
+<li>Random stuff</li>
 </ul></section>
             
           
@@ -900,20 +905,20 @@ first.</p>
             <header><h1>Tools</h1></header>
             
             
-            <section><p>You <em>need</em> these tools to be efficient.</p>
+            <section><p>You <em>need</em> these tools to be efficient:</p>
 <ul>
-<li><a href="http://github.com/maruel/bin_pub">maruel's bin_pub</a> will give you a head
+<li><a href="https://github.com/maruel/bin_pub">maruel's bin_pub</a> will give you a head
     start on how to setup your configuration, in particular you want
-    configs/.gitconfig, configs/.git-prompt.conf, autodiff.</li>
-<li><a href="https://github.com/lvv/git-prompt">git-prompt</a> is extremely useful for bash
-    users. It shows the status of your git and svn checkout. The initial cd into
-    versioned directory is slow so you may want to disable some functionality.<ul>
+    <code>configs/.gitconfig</code>, <code>configs/.git-prompt.conf</code>, <code>autodiff</code>.</li>
+<li><a href="https://github.com/lvv/git-prompt">git-prompt</a> for bash users. Shows the
+    status of your git and svn checkout like <code>PS1</code>.<ul>
 <li>git-prompt is slow on cygwin, borderline usable but I hardly can live
     without it.</li>
 </ul>
 </li>
 <li>Make sure bash completion is enabled.</li>
-<li><a href="kdiff3">kdiff3</a> is a great 3-ways merge tool, available on all platforms.</li>
+<li><a href="http://kdiff3.sourceforge.net/">kdiff3</a> as 3-ways 4-windows merge tool,
+    <code>autodiff</code> uses it.</li>
 </ul></section>
             
           
@@ -943,12 +948,12 @@ first.</p>
 <li>A commit hash is enough to have all the commit linear history up to the
      initial commit.</li>
 <li>Commit hash not referenced by any commit referenced by a named branch or
-     tag will be deleted on next garbage collection, git gc.</li>
+     tag will be deleted on next garbage collection, <code>git gc</code>.</li>
 <li>A named branch can be reset to arbitrary new hash, which happens when you
      rebase.</li>
 </ul>
-<p>If it's still unclear to you, the rest of this document may sound like foreign
-language. It'll be easier if you refer back to the topics as you are trying
+<p>If it's still unclear to you, the rest of this document may sound like <em>foreign
+language</em>. It'll be easier if you refer back to the topics as you are trying
 them, like for instance a pipelined review or squashing a change.</p></section>
             
           
@@ -973,7 +978,8 @@ them, like for instance a pipelined review or squashing a change.</p></section>
             <header><h2>Basic concepts (suite)</h2></header>
             
             
-            <section><p>The following assumes you know the aliases in bin_pub:</p>
+            <section><p>The following assumes you know the aliases in
+<a href="https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig">bin_pub</a>:</p>
 <pre><code>st = status
 co = checkout
 ci = commit
@@ -1041,9 +1047,10 @@ deleted branches.</p></section>
             
             
             <section><p>A tracked branch is the default branch that will be used when <code>pull</code>ing.</p>
-<p>It's also used by <code>git-cl</code> to diff against. You can set a tracking branch with
-<code>br --set-track</code> or specifying the optional tracking branch when <code>co -b
-&lt;new_branch&gt; &lt;tracked branch&gt;</code>.</p></section>
+<p>It's also used by <a href="http://dev.chromium.org/developers/contributing-code">git-cl</a>
+to diff against. You can set a tracking branch with <code>br --set-track</code> or
+specifying the optional tracking branch when <code>co -b &lt;new_branch&gt; &lt;tracked
+branch&gt;</code>.</p></section>
             
           
         </div>
@@ -1067,13 +1074,15 @@ deleted branches.</p></section>
             <header><h2>Serial vs parallel</h2></header>
             
             
-            <section><p>You can do multiple changes in <em>parallel</em> if they are independent of each other.
-On svn, you can have multiple gcl changes on different files or with multiple
-checkouts. You cannot do serialized changes.</p>
-<p>On git you can do <em>serial</em> changes. This means some changes depends on the
+            <section><p>You can do multiple changes in <em>parallel</em> if they are independent of each other.</p>
+<p>You need to do multiple <em>serial</em> changes then a change requires a previous
+change to be checked in.</p>
+<p>With <code>subversion</code>, you can have multiple <a href="http://dev.chromium.org/developers/contributing-code">gcl changes</a> on different files or with
+multiple checkouts. You <em>cannot</em> do serialized changes.</p>
+<p>With <code>git</code> you can do <strong>serial</strong> changes. This means some changes depends on the
 previous changes to be committed. For instance you have the first change
-implementing an interface and the second one using it. You cannot commit the
-second one before committing the first one.</p></section>
+implementing an interface and the second one using it. In general you don't want
+to push the second one before pushing the first one.</p></section>
             
           
         </div>
@@ -1243,8 +1252,9 @@ rebase was done incorrectly, you may want to find the previous commit tree.</p>
 git co &lt;hash&gt;
 git co -b forgotten_branch
 </code></pre>
-<p>Or use the format <code>HEAD@{3}</code> or <code>ORIG_HEAD</code>. Google for more details. You can
-revert the last 3 commits by checking out <code>HEAD~3</code> or <code>HEAD^^^</code>.</p></section>
+<p>Or use the format <code>HEAD@{3}</code> or <code>ORIG_HEAD</code>.
+<a href="http://lmgtfy.com?q=ORIG_HEAD">Google</a> for more details. You can revert the
+last 3 commits by checking out <code>HEAD~3</code> or <code>HEAD^^^</code>.</p></section>
             
           
         </div>
