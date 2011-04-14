@@ -6,17 +6,21 @@ git
 Preamble
 =========
 
-## Tips and recipes are using git-svn based chromium workflow as examples.
+## Tips and recipes using git-svn chromium workflow.
 
-git makes you feel stupid, by design. It doesn't mean you are, it's just hard to
-get to know enough to be efficient, a bit like C++.
+git makes you feel stupid, by design. It doesn't mean you _are_, it's just hard
+to get to know enough to be efficient, like C++.
 
 This presentation assumes you've already played with git a little and banged
-your head on the wall a few times. Otherwise, you may want to review a [visual
-git reference](http://marklodato.github.com/visual-git-guide/index-en.html)
-first.
+your head on the wall a few times. Otherwise, you may want to review:
 
-Press `t` to see the table of content.
+  - [visual git reference](
+    http://marklodato.github.com/visual-git-guide/index-en.html)
+  - [git immersion](http://library.edgecase.com/git_immersion)
+  - [git from the bottom up](
+    http://ftp.newartisans.com/pub/git.from.bottom.up.pdf)
+
+Press `t` to see the table of content and `h` for help.
 
 ---
 
@@ -28,27 +32,29 @@ Schedule
   - Pipelining
   - Finding lost changes
   - Squashing
+  - Merge vs Rebase
   - Reverting a single file
   - Splitting a single commit in two
   - 3 ways push and pull
+  - Random stuff
 
 ---
 
 Tools
 =====
 
-You _need_ these tools to be efficient.
+You _need_ these tools to be efficient:
 
-  - [maruel's bin_pub](http://github.com/maruel/bin_pub) will give you a head
+  - [maruel's bin_pub](https://github.com/maruel/bin_pub) will give you a head
     start on how to setup your configuration, in particular you want
-    configs/.gitconfig, configs/.git-prompt.conf, autodiff.
-  - [git-prompt](https://github.com/lvv/git-prompt) is extremely useful for bash
-    users. It shows the status of your git and svn checkout. The initial cd into
-    versioned directory is slow so you may want to disable some functionality.
+    `configs/.gitconfig`, `configs/.git-prompt.conf`, `autodiff`.
+  - [git-prompt](https://github.com/lvv/git-prompt) for bash users. Shows the
+    status of your git and svn checkout like `PS1`.
       - git-prompt is slow on cygwin, borderline usable but I hardly can live
         without it.
   - Make sure bash completion is enabled.
-  - [kdiff3](kdiff3) is a great 3-ways merge tool, available on all platforms.
+  - [kdiff3](http://kdiff3.sourceforge.net/) as 3-ways 4-windows merge tool,
+    `autodiff` uses it.
 
 ---
 
@@ -59,12 +65,12 @@ Basic concepts
    - A commit hash is enough to have all the commit linear history up to the
      initial commit.
    - Commit hash not referenced by any commit referenced by a named branch or
-     tag will be deleted on next garbage collection, git gc.
+     tag will be deleted on next garbage collection, `git gc`.
    - A named branch can be reset to arbitrary new hash, which happens when you
      rebase.
 
-If it's still unclear to you, the rest of this document may sound like foreign
-language. It'll be easier if you refer back to the topics as you are trying
+If it's still unclear to you, the rest of this document may sound like _foreign
+language_. It'll be easier if you refer back to the topics as you are trying
 them, like for instance a pipelined review or squashing a change.
 
 ---
@@ -72,7 +78,8 @@ them, like for instance a pipelined review or squashing a change.
 Basic concepts (suite)
 ----------------------
 
-The following assumes you know the aliases in bin_pub:
+The following assumes you know the aliases in
+[bin_pub](https://github.com/maruel/bin_pub/blob/master/configs/.gitconfig):
 
     st = status
     co = checkout
@@ -110,23 +117,29 @@ Tracking branch
 
 A tracked branch is the default branch that will be used when `pull`ing.
 
-It's also used by `git-cl` to diff against. You can set a tracking branch with
-`br --set-track` or specifying the optional tracking branch when `co -b
-<new_branch> <tracked branch>`.
+It's also used by [git-cl](http://dev.chromium.org/developers/contributing-code)
+to diff against. You can set a tracking branch with `br --set-track` or
+specifying the optional tracking branch when `co -b <new_branch> <tracked
+branch>`.
 
 ---
 
 Serial vs parallel
 ------------------
 
-You can do multiple changes in *parallel* if they are independent of each other.
-On svn, you can have multiple gcl changes on different files or with multiple
-checkouts. You cannot do serialized changes.
+You can do multiple changes in _parallel_ if they are independent of each other.
 
-On git you can do *serial* changes. This means some changes depends on the
+You need to do multiple _serial_ changes then a change requires a previous
+change to be checked in.
+
+With `subversion`, you can have multiple [gcl changes](
+http://dev.chromium.org/developers/contributing-code) on different files or with
+multiple checkouts. You _cannot_ do serialized changes.
+
+With `git` you can do **serial** changes. This means some changes depends on the
 previous changes to be committed. For instance you have the first change
-implementing an interface and the second one using it. You cannot commit the
-second one before committing the first one.
+implementing an interface and the second one using it. In general you don't want
+to push the second one before pushing the first one.
 
 ---
 
@@ -212,8 +225,9 @@ rebase was done incorrectly, you may want to find the previous commit tree.
     git co <hash>
     git co -b forgotten_branch
 
-Or use the format `HEAD@{3}` or `ORIG_HEAD`. Google for more details. You can
-revert the last 3 commits by checking out `HEAD~3` or `HEAD^^^`.
+Or use the format `HEAD@{3}` or `ORIG_HEAD`.
+[Google](http://lmgtfy.com?q=ORIG_HEAD) for more details. You can revert the
+last 3 commits by checking out `HEAD~3` or `HEAD^^^`.
 
 ---
 
